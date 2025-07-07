@@ -33,6 +33,7 @@ class CycleManager:
 
     def _extract_triplets(self, text: str) -> List[Tuple[str, str, str]]:
         """Naive fallback extraction of triples when no API key is available."""
+
         words = text.split()
         if len(words) >= 3:
             return [(words[0], words[1], " ".join(words[2:]))]
