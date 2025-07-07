@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import ast
 import os
 import logging
 from typing import List, Tuple
@@ -26,18 +27,29 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
         lines = text.splitlines()
         if len(lines) >= 3:
             text = "\n".join(lines[1:-1])
+
+    # Try JSON first, then Python literal evaluation
     try:
         data = json.loads(text)
     except json.JSONDecodeError:
-        import re
-
-        match = re.search(r"\[.*\]", text, re.S)
-        if not match:
-            return None
         try:
-            data = json.loads(match.group(0))
-        except json.JSONDecodeError:
-            return None
+            data = ast.literal_eval(text)
+        except Exception:
+            import re
+
+            match = re.search(r"\[.*\]", text, re.S)
+            if not match:
+                return None
+            snippet = match.group(0)
+            for parser in (json.loads, ast.literal_eval):
+                try:
+                    data = parser(snippet)
+                    break
+                except Exception:
+                    data = None
+            if data is None:
+                return None
+
     if isinstance(data, list):
         triples: List[Tuple[str, str, str]] = []
         for item in data:
@@ -55,7 +67,6 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
 def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tuple[str, str, str]]:
     """Extract semantic triples from ``text`` using an OpenAI chat model."""
     api_key = os.getenv("OPENAI_API_KEY")
-
     if not api_key:
         logger.error("No OpenAI API key provided")
         return []
@@ -80,7 +91,6 @@ def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tu
     except Exception:
         # Fallback for older client versions
         content = response["choices"][0]["message"]["content"]
-
     triples = _parse_response(content)
     if triples is None:
         logger.error("Parsing failed. Text: %r Response: %r", text, content)
