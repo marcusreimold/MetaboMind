@@ -3,7 +3,10 @@ from typing import Dict, List, Tuple
 
 from utils.json_utils import parse_json_safe
 
-import openai
+try:
+    import openai  # type: ignore
+except ImportError:  # pragma: no cover - optional dependency
+    openai = None
 
 from metabo_rules import METABO_RULES
 
@@ -27,9 +30,7 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
         triples as ``(subject, predicate, object)`` tuples.
     """
     key = api_key or os.getenv("OPENAI_API_KEY")
-    client = openai.OpenAI(api_key=key) if key else None
-
-    if not client:
+    if not key or openai is None:
         return {
             "reflection": text,
             "explanation": "Kein OpenAI API-Schlüssel vorhanden; Eingabe unverändert.",
@@ -43,15 +44,28 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
         "und optional 'triplets' als Liste von [subj, pred, obj]."
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        temperature=0,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": text},
-        ],
-    )
-    content = response.choices[0].message.content
+    if hasattr(openai, "OpenAI"):
+        client = openai.OpenAI(api_key=key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": text},
+            ],
+        )
+        content = response.choices[0].message.content
+    else:
+        openai.api_key = key
+        response = openai.ChatCompletion.create(
+            model="gpt-4o",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": text},
+            ],
+        )
+        content = response["choices"][0]["message"]["content"]
     data = parse_json_safe(content)
     if isinstance(data, dict):
         if "triplets" in data and isinstance(data["triplets"], list):

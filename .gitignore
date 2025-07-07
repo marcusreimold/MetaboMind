@@ -1,2 +1,4 @@
 secrets/
 **/__pycache__
+memory/graph.gml
+logs/metabo_log.jsonl
