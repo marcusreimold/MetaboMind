@@ -1,3 +1,4 @@
+
 import os
 from typing import Dict, List, Tuple
 
@@ -52,6 +53,7 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
         ],
     )
     content = response.choices[0].message.content
+
     data = parse_json_safe(content)
     if isinstance(data, dict):
         if "triplets" in data and isinstance(data["triplets"], list):
@@ -62,4 +64,3 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
         "explanation": "Antwort nicht im JSON-Format parsbar.",
         "triplets": [],
     }
-
