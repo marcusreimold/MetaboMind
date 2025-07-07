@@ -5,8 +5,9 @@ from typing import List, Tuple
 
 import openai
 
+from triplet_parser_llm import extract_triplets_via_llm
+
 from reflection.reflection_engine import generate_reflection
-from utils.json_utils import parse_json_safe
 
 from memory.intention_graph import IntentionGraph
 from metabo_rules import METABO_RULES
@@ -19,36 +20,21 @@ class CycleManager:
     def __init__(self, api_key: str | None = None):
         key = api_key or os.getenv("OPENAI_API_KEY")
         self.api_key = key
+        if key:
+            openai.api_key = key
         self.client = openai.OpenAI(api_key=key) if key else None
         self.graph = IntentionGraph()
         self.cycle = 0
         self.logs: List[str] = []
 
     def _extract_triplets(self, text: str) -> List[Tuple[str, str, str]]:
-        """Use OpenAI to extract triples from text."""
-        if not self.client:
-            words = text.split()
-            if len(words) >= 3:
-                return [(words[0], words[1], " ".join(words[2:]))]
-            return []
+        """Extract triples using the LLM parser or a naive fallback."""
+        if self.api_key:
+            return extract_triplets_via_llm(text)
 
-        prompt = (
-            "Extrahiere (Subjekt, Relation, Objekt)-Tripel aus folgendem Text. "
-            "Antworte im JSON-Listenformat: [[\"subj\", \"rel\", \"obj\"], ...]."
-        )
-        response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            temperature=0,
-            messages=[
-                {"role": "system", "content": METABO_RULES},
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": text},
-            ],
-        )
-        content = response.choices[0].message.content
-        data = parse_json_safe(content)
-        if isinstance(data, list):
-            return [(t[0], t[1], t[2]) for t in data]
+        words = text.split()
+        if len(words) >= 3:
+            return [(words[0], words[1], " ".join(words[2:]))]
         return []
 
     def _reflect(self, triplets: List[Tuple[str, str, str]], emotion: float) -> dict:
@@ -60,7 +46,10 @@ class CycleManager:
         """Run a single Metabo cycle with the provided text."""
         self.cycle += 1
         before = entropy_of_graph(self.graph.snapshot())
-        triplets = self._extract_triplets(text)
+        if self.api_key:
+            triplets = extract_triplets_via_llm(text)
+        else:
+            triplets = self._extract_triplets(text)
         if triplets:
             self.graph.add_triplets(triplets)
         after = entropy_of_graph(self.graph.snapshot())
