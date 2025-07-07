@@ -6,8 +6,8 @@ from typing import List, Tuple
 
 import openai
 
-from reflection.reflection_engine import generate_reflection
 
+from reflection.reflection_engine import generate_reflection
 from memory.intention_graph import IntentionGraph
 from metabo_rules import METABO_RULES
 from reasoning.entropy_analyzer import entropy_of_graph
@@ -78,4 +78,5 @@ class CycleManager:
             f"Reflection: {reflection['reflection']}\n"
             f"Begründung: {reflection.get('explanation', '')}\n"
             f"[Logging] {log_entry}"
+
         )
