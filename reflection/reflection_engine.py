@@ -1,6 +1,8 @@
-import json
+
 import os
 from typing import Dict, List, Tuple
+
+from utils.json_utils import parse_json_safe
 
 import openai
 
@@ -51,15 +53,14 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
         ],
     )
     content = response.choices[0].message.content
-    try:
-        data = json.loads(content)
+
+    data = parse_json_safe(content)
+    if isinstance(data, dict):
         if "triplets" in data and isinstance(data["triplets"], list):
             data["triplets"] = [tuple(t) for t in data["triplets"]]
         return data
-    except Exception:
-        return {
-            "reflection": content.strip(),
-            "explanation": "Antwort nicht im JSON-Format parsbar.",
-            "triplets": [],
-        }
-
+    return {
+        "reflection": content.strip(),
+        "explanation": "Antwort nicht im JSON-Format parsbar.",
+        "triplets": [],
+    }
