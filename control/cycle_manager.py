@@ -6,6 +6,8 @@ from typing import List, Tuple
 
 import openai
 
+
+from reflection.reflection_engine import generate_reflection
 from memory.intention_graph import IntentionGraph
 from metabo_rules import METABO_RULES
 from reasoning.entropy_analyzer import entropy_of_graph
@@ -16,6 +18,7 @@ class CycleManager:
 
     def __init__(self, api_key: str | None = None):
         key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_key = key
         self.client = openai.OpenAI(api_key=key) if key else None
         self.graph = IntentionGraph()
         self.cycle = 0
@@ -49,30 +52,10 @@ class CycleManager:
         except Exception:
             return []
 
-    def _reflect(self, triplets: List[Tuple[str, str, str]], emotion: float) -> str:
-        """Ask the model to reflect on new triples and emotion change."""
-        prompt = (
-            "Formuliere basierend auf den neuen Tripeln und der Emotion (Entropie-Änderung) "
-
-            "eine kurze Reflexion, wie der Wissensgraph verbessert werden kann."
-        )
+    def _reflect(self, triplets: List[Tuple[str, str, str]], emotion: float) -> dict:
+        """Use the reflection engine to analyse triplets and emotion."""
         content = f"Triples: {triplets}\nEmotion: {emotion:.3f}"
-
-        if not self.client:
-            return "No reflection available without OpenAI API key."
-
-        response = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            temperature=0,
-
-            messages=[
-                {"role": "system", "content": METABO_RULES},
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": content},
-            ],
-
-        )
-        return response.choices[0].message.content.strip()
+        return generate_reflection(content, api_key=self.api_key)
 
     def run_cycle(self, text: str) -> str:
         """Run a single Metabo cycle with the provided text."""
@@ -92,5 +75,8 @@ class CycleManager:
         return (
             f"[Cycle {self.cycle}] Entropy before: {before:.3f}, "
             f"after: {after:.3f}, Emotion: {emotion:+.3f}\n"
-            f"Reflection: {reflection}\n[Logging] {log_entry}"
+            f"Reflection: {reflection['reflection']}\n"
+            f"Begründung: {reflection.get('explanation', '')}\n"
+            f"[Logging] {log_entry}"
+
         )
