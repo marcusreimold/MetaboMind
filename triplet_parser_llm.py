@@ -55,11 +55,15 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
 def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tuple[str, str, str]]:
     """Extract semantic triples from ``text`` using an OpenAI chat model."""
     api_key = os.getenv("OPENAI_API_KEY")
-    if api_key:
-        openai.api_key = api_key
+
+    if not api_key:
+        logger.error("No OpenAI API key provided")
+        return []
+
+    client = openai.OpenAI(api_key=api_key)
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model=model,
             temperature=0,
             messages=[

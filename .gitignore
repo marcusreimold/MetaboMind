@@ -1,3 +1,4 @@
 secrets/
 **/__pycache__
+memory/graph.gml
 *.gml
