@@ -43,8 +43,8 @@ class CycleManager:
         content = f"Triples: {triplets}\nEmotion: {emotion:.3f}"
         return generate_reflection(content, api_key=self.api_key)
 
-    def run_cycle(self, text: str) -> str:
-        """Run a single Metabo cycle with the provided text."""
+    def run_cycle(self, text: str) -> dict:
+        """Run a single Metabo cycle with the provided text and return results."""
         self.cycle += 1
         before = entropy_of_graph(self.graph.snapshot())
         if self.api_key:
@@ -73,11 +73,17 @@ class CycleManager:
                 emotion=emo["emotion"],
                 intensity=emo["intensity"],
             )
+            
+        return {
+            "cycle": self.cycle,
+            "entropy_before": before,
+            "entropy_after": after,
+            "delta": emo["delta"],
+            "emotion": emo["emotion"],
+            "intensity": emo["intensity"],
+            "reflection": reflection["reflection"],
+            "explanation": reflection.get("explanation", ""),
+            "triplets": triplets,
+            "log_entry": log_entry,
+        }
 
-        return (
-            f"[Cycle {self.cycle}] Entropy before: {before:.3f}, "
-            f"after: {after:.3f}, Emotion: {emo['delta']:+.3f}\n"
-            f"Reflection: {reflection['reflection']}\n"
-            f"Begründung: {reflection.get('explanation', '')}\n"
-            f"[Logging] {log_entry}"
-        )
