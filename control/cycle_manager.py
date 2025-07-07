@@ -53,20 +53,24 @@ class CycleManager:
         """Ask the model to reflect on new triples and emotion change."""
         prompt = (
             "Formuliere basierend auf den neuen Tripeln und der Emotion (Entropie-Änderung) "
+
             "eine kurze Reflexion, wie der Wissensgraph verbessert werden kann."
         )
         content = f"Triples: {triplets}\nEmotion: {emotion:.3f}"
+
         if not self.client:
             return "No reflection available without OpenAI API key."
 
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
             temperature=0,
+
             messages=[
                 {"role": "system", "content": METABO_RULES},
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": content},
             ],
+
         )
         return response.choices[0].message.content.strip()
 
