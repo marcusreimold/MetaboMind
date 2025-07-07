@@ -29,8 +29,8 @@ class CycleManager:
             return []
 
         prompt = (
-            "Extract (subject, relation, object) triples from the following text. "
-            "Respond in JSON list format: [[\"subj\", \"rel\", \"obj\"], ...].\n" + text
+            "Extrahiere (Subjekt, Relation, Objekt)-Tripel aus folgendem Text. "
+            "Antworte im JSON-Listenformat: [[\"subj\", \"rel\", \"obj\"], ...].\n" + text
         )
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -47,8 +47,8 @@ class CycleManager:
     def _reflect(self, triplets: List[Tuple[str, str, str]], emotion: float) -> str:
         """Ask the model to reflect on new triples and emotion change."""
         prompt = (
-            "Given the added triples and emotion (entropy change), provide a short "
-            "reflection on how to improve the knowledge graph."\
+            "Formuliere basierend auf den neuen Tripeln und der Emotion (Entropie-Änderung) "
+            "eine kurze Reflexion, wie der Wissensgraph verbessert werden kann."\
         )
         content = (
             f"Triples: {triplets}\nEmotion: {emotion:.3f}"
