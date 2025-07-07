@@ -72,6 +72,7 @@ class CycleManager:
         )
         self.logs.append(log_entry)
         self.graph.save_graph()
+
         return (
             f"[Cycle {self.cycle}] Entropy before: {before:.3f}, "
             f"after: {after:.3f}, Emotion: {emotion:+.3f}\n"

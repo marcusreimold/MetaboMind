@@ -1,3 +1,4 @@
+
 import os
 import networkx as nx
 from typing import List, Tuple
@@ -32,6 +33,7 @@ class IntentionGraph:
             print(f"[Graph] gespeichert nach {self.filepath}")
         except Exception as exc:
             print(f"[Graph] Fehler beim Speichern: {exc}")
+
 
     def add_triplets(self, triplets: List[Tuple[str, str, str]]):
         """Add a list of (subject, relation, object) triples to the graph."""

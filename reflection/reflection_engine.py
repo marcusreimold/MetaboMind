@@ -62,4 +62,3 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
         "explanation": "Antwort nicht im JSON-Format parsbar.",
         "triplets": [],
     }
-
