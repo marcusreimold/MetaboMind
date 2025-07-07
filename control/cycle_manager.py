@@ -73,7 +73,7 @@ class CycleManager:
                 emotion=emo["emotion"],
                 intensity=emo["intensity"],
             )
-
+            
         return {
             "cycle": self.cycle,
             "entropy_before": before,
@@ -86,3 +86,4 @@ class CycleManager:
             "triplets": triplets,
             "log_entry": log_entry,
         }
+
