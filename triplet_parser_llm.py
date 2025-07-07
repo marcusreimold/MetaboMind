@@ -27,6 +27,7 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
         lines = text.splitlines()
         if len(lines) >= 3:
             text = "\n".join(lines[1:-1])
+
     # Try JSON first, then Python literal evaluation
     try:
         data = json.loads(text)
@@ -48,6 +49,7 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
                     data = None
             if data is None:
                 return None
+
     if isinstance(data, list):
         triples: List[Tuple[str, str, str]] = []
         for item in data:
