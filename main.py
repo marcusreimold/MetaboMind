@@ -1,5 +1,6 @@
 from control.cycle_manager import CycleManager
 
+
 RULES = """Metabo-Regeln:
 1. R0 – Symbolische Verknüpfung: Baue und erweitere einen symbolischen Wissensgraphen (IntentionGraph) mit Struktur und Verknüpfungen.
 2. R1 – Entropie-Messung: Implementiere Methoden zur quantitativen Bewertung von Ordnern und Verbindungen.
@@ -8,9 +9,7 @@ RULES = """Metabo-Regeln:
 5. R5 – Protokollierung: Logge jede Zyklus-Iteration mit Entropiewerten und Reflexionsänderungen.
 """
 
-
 def main():
-    print(RULES)
     manager = CycleManager()
     text = input("Eingabe: ")
     result = manager.run_cycle(text)
