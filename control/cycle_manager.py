@@ -3,7 +3,15 @@ from __future__ import annotations
 import os
 from typing import List, Tuple
 
-import openai
+try:
+    import openai  # type: ignore
+except ImportError:  # pragma: no cover - optional dependency
+    openai = None
+
+from logs.logger import MetaboLogger
+from reasoning.emotion import interpret_emotion
+
+from triplet_parser_llm import extract_triplets_via_llm
 
 from logs.logger import MetaboLogger
 from reasoning.emotion import interpret_emotion
@@ -23,9 +31,14 @@ class CycleManager:
     def __init__(self, api_key: str | None = None, logger: MetaboLogger | None = None):
         key = api_key or os.getenv("OPENAI_API_KEY")
         self.api_key = key
-        if key:
-            openai.api_key = key
-        self.client = openai.OpenAI(api_key=key) if key else None
+        if key and openai is not None:
+            if hasattr(openai, "OpenAI"):
+                self.client = openai.OpenAI(api_key=key)
+            else:
+                openai.api_key = key
+                self.client = openai
+        else:
+            self.client = None
         self.graph = IntentionGraph()
         self.cycle = 0
         self.logger = logger
@@ -47,7 +60,7 @@ class CycleManager:
         """Run a single Metabo cycle with the provided text and return results."""
         self.cycle += 1
         before = entropy_of_graph(self.graph.snapshot())
-        if self.api_key:
+        if self.api_key and self.client is not None:
             triplets = extract_triplets_via_llm(text)
         else:
             triplets = self._extract_triplets(text)
@@ -73,7 +86,7 @@ class CycleManager:
                 emotion=emo["emotion"],
                 intensity=emo["intensity"],
             )
-            
+
         return {
             "cycle": self.cycle,
             "entropy_before": before,
@@ -86,4 +99,3 @@ class CycleManager:
             "triplets": triplets,
             "log_entry": log_entry,
         }
-
