@@ -75,7 +75,12 @@ def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tu
         logger.error("LLM request failed: %s", exc)
         return []
 
-    content = response["choices"][0]["message"]["content"]
+    try:
+        content = response.choices[0].message.content
+    except Exception:
+        # Fallback for older client versions
+        content = response["choices"][0]["message"]["content"]
+
     triples = _parse_response(content)
     if triples is None:
         logger.error("Parsing failed. Text: %r Response: %r", text, content)
