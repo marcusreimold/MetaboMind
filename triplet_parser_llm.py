@@ -120,6 +120,7 @@ def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tu
                     {"role": "user", "content": text},
                 ],
             )
+
     except Exception as exc:
         logger.error("LLM request failed: %s", exc)
         return []
