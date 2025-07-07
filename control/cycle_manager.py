@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import os
 from typing import List, Tuple
 
@@ -8,6 +7,7 @@ import openai
 
 from reflection.reflection_engine import generate_reflection
 from utils.json_utils import parse_json_safe
+
 from memory.intention_graph import IntentionGraph
 from metabo_rules import METABO_RULES
 from reasoning.entropy_analyzer import entropy_of_graph
@@ -46,7 +46,6 @@ class CycleManager:
             ],
         )
         content = response.choices[0].message.content
-
         data = parse_json_safe(content)
         if isinstance(data, list):
             return [(t[0], t[1], t[2]) for t in data]
