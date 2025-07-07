@@ -10,14 +10,34 @@ from typing import List, Tuple
 import openai
 
 # System prompt instructing the model
+
 _SYSTEM_PROMPT = (
     "Extrahiere aus folgendem deutschen Text alle bedeutungsvollen Aussagen als "
-    "Tripel (Subjekt, Prädikat, Objekt). Gib nur eine Liste von Tripeln im "
-    "Format [(Subjekt, Prädikat, Objekt)] zurück. Kein Kommentar, keine "
-    "Erklärungen."
+    "Tripel (Subjekt, Prädikat, Objekt). "
+    "Gib nur eine Liste von Tripeln im Format [('Subjekt', 'Prädikat', 'Objekt')] "
+    "zurück. Kein Kommentar, keine Erklärungen."
 )
-
 logger = logging.getLogger(__name__)
+
+
+def _parse_unquoted(text: str) -> List[Tuple[str, str, str]] | None:
+    """Attempt to parse a list of triples without quoted strings."""
+    import re
+
+    txt = text.strip()
+    if not (txt.startswith("[") and txt.endswith("]")):
+        return None
+    inner = txt[1:-1].strip()
+    # split triples separated by '],[' or '),(' etc.
+    segments = re.split(r"\]\s*,\s*\[|\)\s*,\s*\(|\],\s*\(|\),\s*\[", inner)
+    triples: List[Tuple[str, str, str]] = []
+    for seg in segments:
+        seg = seg.strip().strip("[]()")
+        parts = [p.strip(" '\"") for p in seg.split(',')]
+        if len(parts) != 3:
+            return None
+        triples.append(tuple(parts))
+    return triples
 
 
 def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
@@ -27,7 +47,6 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
         lines = text.splitlines()
         if len(lines) >= 3:
             text = "\n".join(lines[1:-1])
-
     # Try JSON first, then Python literal evaluation
     try:
         data = json.loads(text)
@@ -38,18 +57,20 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
             import re
 
             match = re.search(r"\[.*\]", text, re.S)
-            if not match:
-                return None
-            snippet = match.group(0)
-            for parser in (json.loads, ast.literal_eval):
-                try:
-                    data = parser(snippet)
-                    break
-                except Exception:
-                    data = None
+            if match:
+                snippet = match.group(0)
+                for parser in (json.loads, ast.literal_eval):
+                    try:
+                        data = parser(snippet)
+                        break
+                    except Exception:
+                        data = None
+                if data is None:
+                    data = _parse_unquoted(snippet)
+            else:
+                data = _parse_unquoted(text)
             if data is None:
                 return None
-
     if isinstance(data, list):
         triples: List[Tuple[str, str, str]] = []
         for item in data:
