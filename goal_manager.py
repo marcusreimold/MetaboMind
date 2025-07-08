@@ -33,3 +33,26 @@ class GoalManager:
     def save_reflection(self, reflection: str) -> None:
         """Store the most recent reflection text."""
         self.reflection_path.write_text(reflection, encoding="utf-8")
+
+
+_DEFAULT_MANAGER = GoalManager()
+
+
+def set_goal(goal: str) -> None:
+    """Convenience wrapper to store ``goal`` using the default manager."""
+    _DEFAULT_MANAGER.set_goal(goal)
+
+
+def get_active_goal() -> str:
+    """Return the currently active goal using the default manager."""
+    return _DEFAULT_MANAGER.get_goal()
+
+
+def load_last_reflection() -> str:
+    """Return the last saved reflection."""
+    return _DEFAULT_MANAGER.load_reflection()
+
+
+def save_last_reflection(text: str) -> None:
+    """Persist ``text`` as the latest reflection."""
+    _DEFAULT_MANAGER.save_reflection(text)
