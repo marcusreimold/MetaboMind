@@ -11,12 +11,12 @@ except ImportError:  # pragma: no cover - optional dependency
 from logs.logger import MetaboLogger
 from reasoning.emotion import interpret_emotion
 
-from triplet_parser_llm import extract_triplets_via_llm
+from parsing.triplet_parser_llm import extract_triplets_via_llm
 
 from reflection.reflection_engine import generate_reflection
 
 from memory.intention_graph import IntentionGraph
-from metabo_rules import METABO_RULES
+from control.metabo_rules import METABO_RULES
 from reasoning.entropy_analyzer import entropy_of_graph
 
 

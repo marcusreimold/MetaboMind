@@ -31,11 +31,13 @@ def _parse_unquoted(text: str) -> List[Tuple[str, str, str]] | None:
     if not (txt.startswith("[") and txt.endswith("]")):
         return None
     inner = txt[1:-1].strip()
-    # split triples separated by '],[' or '),(' etc.
-    segments = re.split(r"\]\s*,\s*\[|\)\s*,\s*\(|\],\s*\(|\),\s*\[", inner)
+    # split triples separated by brackets, parentheses, commas or newlines
+    segments = re.split(r"\]\s*,\s*\[|\]\s*\n\s*\[|\)\s*,\s*\(|\],\s*\(|\),\s*\[", inner)
     triples: List[Tuple[str, str, str]] = []
     for seg in segments:
         seg = seg.strip().strip("[]()")
+        if not seg:
+            continue
         parts = [p.strip(" '\"") for p in seg.split(',')]
         if len(parts) != 3:
             return None
