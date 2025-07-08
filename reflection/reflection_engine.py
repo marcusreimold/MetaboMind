@@ -39,9 +39,15 @@ def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, obje
 
     system_prompt = (
         METABO_RULES
-        + "\nReflektiere die folgende Aussage, verbessere oder präzisiere sie. "
-        "Antworte im JSON-Format mit den Schlüsseln 'reflection', 'explanation' "
-        "und optional 'triplets' als Liste von [subj, pred, obj]."
+        + (
+            "\nDu bist ein Denkagent in einem KI-System namens MetaboMind. "
+            "Deine Aufgabe ist es, auf eine Nutzereingabe im Kontext eines Ziels "
+            "zu antworten. Sprich dabei direkt zum Nutzer – nicht über die Eingabe. "
+            "Formuliere eine neue Aussage, die dem Ziel näherkommt. Nutze dein "
+            "vorhandenes Wissen und die letzte Reflexion, wenn sie dir hilft. "
+            "Antworte in einem einzigen natürlichen Satz. Keine Meta-Analyse, "
+            "keine Wiederholung des Ziels."
+        )
     )
 
     if hasattr(openai, "OpenAI"):
