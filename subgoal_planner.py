@@ -1,8 +1,11 @@
-"""Generate new input statements to pursue a goal."""
+"""Decompose a high-level goal into concrete subgoals."""
 from __future__ import annotations
 
+from typing import List
 import logging
 import os
+
+from utils.json_utils import parse_json_safe
 
 try:
     import openai  # type: ignore
@@ -12,22 +15,21 @@ except ImportError:  # pragma: no cover - optional dependency
 logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT = (
-    "Du bist ein Denkagent in einem KI-System namens MetaboMind. "
-    "Deine Aufgabe ist es, eine kurze, neue Aussage zu formulieren, "
-    "die das folgende Ziel inhaltlich weiterverfolgt. Nutze dazu auch "
-    "die letzte Reflexion, wenn vorhanden. Formuliere die Aussage in "
-    "natürlicher Sprache, als würdest du einen neuen Gedanken entwickeln. "
-    "Gib nur den einen Satz zurück – keine Erklärung, keine Wiederholung des Ziels."
+    "Du bist ein Planungsagent in einem KI-System namens MetaboMind. "
+    "Zerlege das folgende Ziel in 2 bis 5 umsetzbare Teilziele. "
+    "Formuliere jedes Teilziel als kurzen Satz im Klartext. "
+    "Gib eine JSON-Liste der Teilziele zur\xFCck."
 )
 
 
-def generate_next_input(
+def decompose_goal(
     goal: str,
-    previous_reflection: str = "",
-    model: str = "gpt-3.5-turbo",
-    temperature: float = 0.7,
-) -> str:
-    """Generate a short statement that pursues ``goal`` further."""
+    context: str = "",
+    *,
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.3,
+) -> List[str]:
+    """Return a list of subgoals decomposed from ``goal``."""
     if openai is None:
         raise ImportError("openai package not installed")
 
@@ -35,14 +37,13 @@ def generate_next_input(
     if not api_key:
         raise EnvironmentError("OPENAI_API_KEY not set")
 
-    reflection = previous_reflection.strip()[:300] if previous_reflection else ""
-    content = f"Ziel: {goal}"
-    if reflection:
-        content += f"\nLetzte Reflexion: {reflection}"
+    user_content = f"Ziel: {goal}"
+    if context:
+        user_content += f"\nKontext: {context}"
 
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": content},
+        {"role": "user", "content": user_content},
     ]
 
     try:
@@ -66,14 +67,17 @@ def generate_next_input(
         logger.error("LLM request failed: %s", exc)
         text = ""
 
-    if not text or not text.strip():
-        return "Verantwortung ist der Preis der Freiheit."
-    return text.strip()
+    subgoals: List[str] = []
+    data = parse_json_safe(text)
+    if isinstance(data, list) and all(isinstance(s, str) for s in data):
+        subgoals = [s.strip() for s in data if s.strip()]
+    else:
+        lines = [l.strip("-•* \t") for l in text.splitlines() if l.strip()]
+        if 2 <= len(lines) <= 5:
+            subgoals = lines
 
+    if not subgoals:
+        logger.info("No subgoals parsed, returning goal as single item")
+        subgoals = [goal.strip()]
 
-if __name__ == "__main__":
-    example = generate_next_input(
-        "Was bedeutet Freiheit?",
-        "Freiheit ist Selbstbestimmung.",
-    )
-    print(example)
+    return subgoals
