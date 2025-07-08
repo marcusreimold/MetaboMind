@@ -1,8 +1,9 @@
-"""Command-line interface for MetaboMind."""
+"""Entry point for MetaboMind launching the Tkinter GUI."""
 from __future__ import annotations
 
-from metabo_cycle import run_metabo_cycle
-from goal_manager import set_goal, get_active_goal
+from control.metabo_cycle import run_metabo_cycle
+from goals.goal_manager import set_goal, get_active_goal
+from interface.metabo_gui import MetaboGUI
 
 
 def print_help() -> None:
@@ -14,6 +15,8 @@ def print_help() -> None:
 
 
 def main() -> None:
+    """Interactive loop processing user input via ``run_metabo_cycle``."""
+    print("[MetaboMind CLI]")
     """Interactive loop processing user input via ``run_metabo_cycle``."""
     print("[MetaboMind CLI]")
     while True:
@@ -39,8 +42,25 @@ def main() -> None:
             else:
                 set_goal(new_goal)
                 print(f"[Neues Ziel gespeichert: {new_goal}]")
+        if user_input == "/hilfe":
+            print_help()
+            continue
+        if user_input.startswith("/ziel"):
+            new_goal = user_input[len("/ziel"):].strip()
+            if not new_goal:
+                print("[Bitte ein Ziel nach '/ziel' angeben.]")
+            else:
+                set_goal(new_goal)
+                print(f"[Neues Ziel gespeichert: {new_goal}]")
             continue
 
+        result = run_metabo_cycle(user_input)
+        print("[Zyklus abgeschlossen]")
+        print(f"Ziel: {result['goal']}")
+        print(f"Antwort: {result['reflection']}")
+        print(f"Emotion: {result['emotion']} (Δ={result['delta']:+.2f})")
+        if result['triplets']:
+            print(f"Neue Tripel: {result['triplets']}")
         result = run_metabo_cycle(user_input)
         print("[Zyklus abgeschlossen]")
         print(f"Ziel: {result['goal']}")
@@ -51,4 +71,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    gui = MetaboGUI()
+    gui.run()

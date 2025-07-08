@@ -10,7 +10,7 @@ from typing import List, Tuple
 class MetaboLogger:
     """Append JSON lines with cycle information to a log file."""
 
-    def __init__(self, filepath: str = "logs/metabo_log.jsonl") -> None:
+    def __init__(self, filepath: str = "data/metabo_log.jsonl") -> None:
         self.filepath = Path(filepath)
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
 

@@ -1,5 +1,5 @@
 import networkx as nx
-import recall_context
+from memory import recall_context
 
 
 def test_recall_context_global(monkeypatch):

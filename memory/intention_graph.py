@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 class IntentionGraph:
     """Graph storing intention triples with persistent GML saving."""
 
-    def __init__(self, filepath: str = "memory/graph.gml"):
+    def __init__(self, filepath: str = "data/graph.gml"):
         """Load existing graph from ``filepath`` or create a new one."""
         self.filepath = filepath
         self.load_graph()

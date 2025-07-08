@@ -1,4 +1,4 @@
-import triplet_parser_llm
+from parsing import triplet_parser_llm
 
 
 def test_parse_newline_brackets():

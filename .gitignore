@@ -1,7 +1,7 @@
 secrets/
 **/__pycache__
-memory/graph.gml
-logs/metabo_log.jsonl
+data/graph.gml
+data/metabo_log.jsonl
 *.txt
 setAPIKey.sh
 *.zip

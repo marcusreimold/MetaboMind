@@ -1,4 +1,4 @@
-import subgoal_executor
+from goals import subgoal_executor
 
 
 def test_execute_first_subgoal(monkeypatch):

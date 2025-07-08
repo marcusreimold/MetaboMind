@@ -4,7 +4,7 @@ import types
 import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import goal_engine
+from goals import goal_engine
 
 
 def test_missing_openai(monkeypatch):

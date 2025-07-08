@@ -1,6 +1,6 @@
 import types
 import pytest
-import subgoal_planner
+from goals import subgoal_planner
 
 
 def test_missing_openai(monkeypatch):

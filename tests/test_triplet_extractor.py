@@ -4,7 +4,7 @@ import logging
 import types
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import triplet_extractor
+from parsing import triplet_extractor
 
 
 def test_duplicate_removal(caplog):
