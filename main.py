@@ -17,6 +17,8 @@ def print_help() -> None:
 def main() -> None:
     """Interactive loop processing user input via ``run_metabo_cycle``."""
     print("[MetaboMind CLI]")
+    """Interactive loop processing user input via ``run_metabo_cycle``."""
+    print("[MetaboMind CLI]")
     while True:
         try:
             user_input = input("> ").strip()
@@ -40,8 +42,25 @@ def main() -> None:
             else:
                 set_goal(new_goal)
                 print(f"[Neues Ziel gespeichert: {new_goal}]")
+        if user_input == "/hilfe":
+            print_help()
+            continue
+        if user_input.startswith("/ziel"):
+            new_goal = user_input[len("/ziel"):].strip()
+            if not new_goal:
+                print("[Bitte ein Ziel nach '/ziel' angeben.]")
+            else:
+                set_goal(new_goal)
+                print(f"[Neues Ziel gespeichert: {new_goal}]")
             continue
 
+        result = run_metabo_cycle(user_input)
+        print("[Zyklus abgeschlossen]")
+        print(f"Ziel: {result['goal']}")
+        print(f"Antwort: {result['reflection']}")
+        print(f"Emotion: {result['emotion']} (Δ={result['delta']:+.2f})")
+        if result['triplets']:
+            print(f"Neue Tripel: {result['triplets']}")
         result = run_metabo_cycle(user_input)
         print("[Zyklus abgeschlossen]")
         print(f"Ziel: {result['goal']}")
