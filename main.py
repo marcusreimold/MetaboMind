@@ -1,11 +1,21 @@
-from control.cycle_manager import CycleManager
-from logs.logger import MetaboLogger
+"""Command-line interface for MetaboMind."""
+from __future__ import annotations
+
+from metabo_cycle import run_metabo_cycle
+from goal_manager import set_goal, get_active_goal
+
+
+def print_help() -> None:
+    """Display available CLI commands."""
+    print("Verfügbare Befehle:")
+    print("/quit  - Programm beenden")
+    print("/ziel <Text> - neues Ziel setzen")
+    print("/hilfe - diese Hilfe anzeigen")
 
 
 def main() -> None:
-    """Interactive command loop for MetaboMind."""
-    manager = CycleManager(logger=MetaboLogger())
-    pending_input = ""
+    """Interactive loop processing user input via ``run_metabo_cycle``."""
+    print("[MetaboMind CLI]")
     while True:
         try:
             user_input = input("> ").strip()
@@ -19,26 +29,25 @@ def main() -> None:
         if user_input == "/quit":
             print("[MetaboMind wird beendet.]")
             break
-
-        if user_input == "/takt":
-            if not pending_input:
-                print("[Keine Eingabe gespeichert.]")
-                continue
-            print("[Zyklus gestartet...]")
-            res = manager.run_cycle(pending_input)
-            print(f"Entropie vorher: {res['entropy_before']:.2f}")
-            print(f"Entropie nachher: {res['entropy_after']:.2f}")
-            print(
-                f"Δ: {res['delta']:+.2f} → Emotion: {res['emotion']} ({res['intensity']})"
-            )
-            print(f"Reflexion: {res['reflection']}")
-            if res["triplets"]:
-                print(f"Triplets: {res['triplets']}")
-            pending_input = ""
+        if user_input == "/hilfe":
+            print_help()
+            continue
+        if user_input.startswith("/ziel"):
+            new_goal = user_input[len("/ziel"):].strip()
+            if not new_goal:
+                print("[Bitte ein Ziel nach '/ziel' angeben.]")
+            else:
+                set_goal(new_goal)
+                print(f"[Neues Ziel gespeichert: {new_goal}]")
             continue
 
-        pending_input = user_input
-        print("[Eingabe gespeichert. Verwende '/takt' für Analyse.]")
+        result = run_metabo_cycle(user_input)
+        print("[Zyklus abgeschlossen]")
+        print(f"Ziel: {result['goal']}")
+        print(f"Antwort: {result['reflection']}")
+        print(f"Emotion: {result['emotion']} (Δ={result['delta']:+.2f})")
+        if result['triplets']:
+            print(f"Neue Tripel: {result['triplets']}")
 
 
 if __name__ == "__main__":

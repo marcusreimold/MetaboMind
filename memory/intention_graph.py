@@ -1,7 +1,10 @@
 
 import os
-import networkx as nx
 from typing import List, Tuple
+
+import networkx as nx
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 class IntentionGraph:
     """Graph storing intention triples with persistent GML saving."""
@@ -45,3 +48,38 @@ class IntentionGraph:
     def snapshot(self) -> nx.MultiDiGraph:
         """Return a copy of the current graph."""
         return self.graph.copy()
+
+
+def expand_target_neighborhood(
+    G: nx.Graph,
+    target_node: str,
+    embeddings: dict,
+    entropies: dict,
+    top_k: int = 5,
+) -> List[str]:
+    """Return the ``top_k`` nodes most relevant to ``target_node``.
+
+    Relevance is measured as cosine similarity multiplied by the node's
+    entropy value.
+    """
+
+    if target_node not in embeddings:
+        raise ValueError(f"Embedding for target node '{target_node}' not found")
+
+    target_vec = embeddings[target_node].reshape(1, -1)
+
+    scores = {}
+    for node in G.nodes():
+        if node == target_node:
+            continue
+        vec = embeddings.get(node)
+        entropy = entropies.get(node)
+        if vec is None or entropy is None:
+            continue
+
+        sim = cosine_similarity(target_vec, vec.reshape(1, -1))[0, 0]
+        scores[node] = sim * entropy
+
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return [n for n, _ in ranked[:top_k]]
+
