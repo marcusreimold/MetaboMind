@@ -21,46 +21,54 @@ _SYSTEM_PROMPT = (
 )
 
 
-def generate_next_input(goal: str, previous_reflection: str = "", model: str = "gpt-3.5-turbo") -> str:
+def generate_next_input(
+    goal: str,
+    previous_reflection: str = "",
+    model: str = "gpt-3.5-turbo",
+    temperature: float = 0.7,
+) -> str:
     """Generate a short statement that pursues ``goal`` further."""
     if openai is None:
-        logger.error("openai package not installed")
-        return ""
+        raise ImportError("openai package not installed")
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        logger.error("No OpenAI API key provided")
-        return ""
+        raise EnvironmentError("OPENAI_API_KEY not set")
+
+    reflection = previous_reflection.strip()[:300] if previous_reflection else ""
+    content = f"Ziel: {goal}"
+    if reflection:
+        content += f"\nLetzte Reflexion: {reflection}"
 
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": goal},
+        {"role": "user", "content": content},
     ]
-    if previous_reflection:
-        messages.append({"role": "assistant", "content": previous_reflection})
 
     try:
         if hasattr(openai, "OpenAI"):
             client = openai.OpenAI(api_key=api_key)
             response = client.chat.completions.create(
                 model=model,
-                temperature=0,
+                temperature=temperature,
                 messages=messages,
             )
-            content = response.choices[0].message.content
+            text = response.choices[0].message.content
         else:
             openai.api_key = api_key
             response = openai.ChatCompletion.create(
                 model=model,
-                temperature=0,
+                temperature=temperature,
                 messages=messages,
             )
-            content = response["choices"][0]["message"]["content"]
+            text = response["choices"][0]["message"]["content"]
     except Exception as exc:
         logger.error("LLM request failed: %s", exc)
-        return ""
+        text = ""
 
-    return content.strip()
+    if not text or not text.strip():
+        return "Verantwortung ist der Preis der Freiheit."
+    return text.strip()
 
 
 if __name__ == "__main__":
