@@ -11,6 +11,8 @@ from reflection.reflection_engine import generate_reflection
 from logs.logger import MetaboLogger
 from reasoning.emotion import interpret_emotion
 from reasoning.entropy_analyzer import entropy_of_graph
+from subgoal_planner import decompose_goal
+from subgoal_executor import execute_first_subgoal
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,13 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
 
     goal = goal_mgr.get_goal()
     last_reflection = goal_mgr.load_reflection()
+
+    try:
+        subgoals = decompose_goal(goal, last_reflection)
+    except Exception as exc:
+        logger.warning("subgoal planning failed: %s", exc)
+        subgoals = [goal]
+    goal = execute_first_subgoal(goal, subgoals)
 
     graph_snapshot = graph_mgr.snapshot()
     entropy_before = entropy_of_graph(graph_snapshot)
@@ -86,6 +95,7 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     return {
         "goal": goal,
         "input": user_input,
+        "subgoals": subgoals,
         "context": context_nodes,
         "reflection": reflection_text,
         "triplets": triplets,
