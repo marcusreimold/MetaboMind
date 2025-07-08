@@ -8,7 +8,7 @@ try:
 except ImportError:  # pragma: no cover - optional dependency
     openai = None
 
-from metabo_rules import METABO_RULES
+from control.metabo_rules import METABO_RULES
 
 
 def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, object]:
