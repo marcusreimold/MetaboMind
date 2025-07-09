@@ -7,6 +7,7 @@ from goal_manager import GoalManager
 from graph_manager import GraphManager
 from context_selector import load_context
 from triplet_parser_llm import extract_triplets_via_llm
+from recall_context import recall_context
 from reflection.reflection_engine import generate_reflection
 from logs.logger import MetaboLogger
 from reasoning.emotion import interpret_emotion
@@ -42,15 +43,22 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         logger.warning("context selection failed: %s", exc)
         context_nodes = []
 
-    prompt = (
-        f"Ziel: {goal}\n"\
-        f"Eingabe: {user_input}\n"\
-        f"Kontext: {', '.join(context_nodes)}\n"\
-        f"Letzte Reflexion: {last_reflection}"
-    )
+    try:
+        mem_facts = recall_context(scope="goal", limit=5)
+        fact_triplets = [
+            (d["subject"], d["predicate"], d["object"]) for d in mem_facts
+        ]
+    except Exception as exc:
+        logger.warning("context recall failed: %s", exc)
+        fact_triplets = []
 
     try:
-        reflection_data = generate_reflection(prompt)
+        reflection_data = generate_reflection(
+            last_user_input=user_input,
+            goal=goal,
+            last_reflection=last_reflection,
+            triplets=fact_triplets,
+        )
         reflection_text = reflection_data.get("reflection", "")
     except Exception as exc:
         logger.warning("reflection generation failed: %s", exc)
