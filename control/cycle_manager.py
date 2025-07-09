@@ -46,10 +46,20 @@ class CycleManager:
             return [(words[0], words[1], " ".join(words[2:]))]
         return []
 
-    def _reflect(self, triplets: List[Tuple[str, str, str]], emotion: float) -> dict:
+    def _reflect(
+        self,
+        user_input: str,
+        triplets: List[Tuple[str, str, str]],
+        emotion: float,
+    ) -> dict:
         """Use the reflection engine to analyse triplets and emotion."""
-        content = f"Triples: {triplets}\nEmotion: {emotion:.3f}"
-        return generate_reflection(content, api_key=self.api_key)
+        return generate_reflection(
+            last_user_input=user_input,
+            goal="",
+            last_reflection="",
+            triplets=triplets,
+            api_key=self.api_key,
+        )
 
     def run_cycle(self, text: str) -> dict:
         """Run a single Metabo cycle with the provided text and return results."""
@@ -63,7 +73,7 @@ class CycleManager:
             self.graph.add_triplets(triplets)
         after = entropy_of_graph(self.graph.snapshot())
         emo = interpret_emotion(before, after)
-        reflection = self._reflect(triplets, emo["delta"])
+        reflection = self._reflect(text, triplets, emo["delta"])
         log_entry = (
             f"Cycle{self.cycle}: ent_b={before:.3f} ent_a={after:.3f} "
             f"emotion={emo['delta']:.3f}"
