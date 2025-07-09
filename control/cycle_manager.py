@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from goals.goal_updater import (
+    propose_goal,
+    check_goal_shift,
+    apply_goal_shift,
+)
 
 from logs.logger import MetaboLogger
 from reasoning.emotion import interpret_emotion
@@ -14,9 +15,9 @@ from reasoning.emotion import interpret_emotion
 from parsing.triplet_parser_llm import extract_triplets_via_llm
 
 from reflection.reflection_engine import generate_reflection
+from goals.goal_manager import GoalManager
 
 from memory.intention_graph import IntentionGraph
-from control.metabo_rules import METABO_RULES
 from reasoning.entropy_analyzer import entropy_of_graph
 
 
@@ -24,20 +25,13 @@ class CycleManager:
     """Manages Metabo cycles including graph updates and reflections."""
 
     def __init__(self, api_key: str | None = None, logger: MetaboLogger | None = None):
-        key = api_key or os.getenv("OPENAI_API_KEY")
-        self.api_key = key
-        if key and openai is not None:
-            if hasattr(openai, "OpenAI"):
-                self.client = openai.OpenAI(api_key=key)
-            else:
-                openai.api_key = key
-                self.client = openai
-        else:
-            self.client = None
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.graph = IntentionGraph()
         self.cycle = 0
         self.logger = logger
         self.logs: List[str] = []
+        self.goal_mgr = GoalManager()
+        self.current_goal = self.goal_mgr.get_goal()
 
     def _extract_triplets(self, text: str) -> List[Tuple[str, str, str]]:
         """Naive fallback extraction of triples when no API key is available."""
@@ -55,8 +49,8 @@ class CycleManager:
         """Use the reflection engine to analyse triplets and emotion."""
         return generate_reflection(
             last_user_input=user_input,
-            goal="",
-            last_reflection="",
+            goal=self.current_goal,
+            last_reflection=self.goal_mgr.load_reflection(),
             triplets=triplets,
             api_key=self.api_key,
         )
@@ -64,8 +58,19 @@ class CycleManager:
     def run_cycle(self, text: str) -> dict:
         """Run a single Metabo cycle with the provided text and return results."""
         self.cycle += 1
+        goal_message = ""
+
+        proposed = propose_goal(text, api_key=self.api_key)
+
+        if not self.current_goal:
+            self.current_goal = proposed or text.strip()
+            apply_goal_shift("", self.current_goal, self.goal_mgr, self.graph)
+        elif proposed and check_goal_shift(self.current_goal, proposed, api_key=self.api_key):
+            apply_goal_shift(self.current_goal, proposed, self.goal_mgr, self.graph)
+            self.current_goal = proposed
+            goal_message = f"Neues Ziel erkannt: {self.current_goal}"
         before = entropy_of_graph(self.graph.snapshot())
-        if self.api_key and self.client is not None:
+        if self.api_key:
             triplets = extract_triplets_via_llm(text)
         else:
             triplets = self._extract_triplets(text)
@@ -74,6 +79,7 @@ class CycleManager:
         after = entropy_of_graph(self.graph.snapshot())
         emo = interpret_emotion(before, after)
         reflection = self._reflect(text, triplets, emo["delta"])
+        self.goal_mgr.save_reflection(reflection.get("reflection", ""))
         log_entry = (
             f"Cycle{self.cycle}: ent_b={before:.3f} ent_a={after:.3f} "
             f"emotion={emo['delta']:.3f}"
@@ -103,4 +109,6 @@ class CycleManager:
             "explanation": reflection.get("explanation", ""),
             "triplets": triplets,
             "log_entry": log_entry,
+            "goal": self.current_goal,
+            "goal_update": goal_message,
         }

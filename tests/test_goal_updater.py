@@ -29,3 +29,9 @@ def test_new_goal(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "x")
     res = goal_updater.update_goal("frage", "Alt", "", [])
     assert res == "Untersuche X"
+
+
+def test_explicit_command(monkeypatch):
+    monkeypatch.setattr(goal_updater, "openai", None)
+    res = goal_updater.update_goal("Beschäftige dich mit Z", "Alt", "", [])
+    assert res == "Z"
