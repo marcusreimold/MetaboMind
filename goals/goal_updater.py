@@ -22,7 +22,6 @@ _SYSTEM_PROMPT = (
     "Gib ausschlie\u00dflich das Ziel zur\u00fcck."
 )
 
-
 def _extract_explicit_goal(text: str) -> Optional[str]:
     """Return an explicit goal mentioned in ``text``."""
 
