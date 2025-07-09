@@ -53,7 +53,6 @@ def generate_reflection(
         "Du bist kein Betriebssystem, kein technischer Support, und du interagierst nicht mit dem Desktop oder Benutzeroberflächen."
     )
 
-
     user_content = f"Ziel: {goal}\nEingabe: {last_user_input}"
     if last_reflection.strip():
         user_content += f"\nLetzte Reflexion: {last_reflection.strip()}"
