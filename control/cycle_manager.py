@@ -95,6 +95,7 @@ class CycleManager:
         emo = interpret_emotion(before, after)
         reflection = self._reflect(text, triplets, emo["delta"])
         self.goal_mgr.save_reflection(reflection.get("reflection", ""))
+
         log_entry = (
             f"Cycle{self.cycle}: ent_b={before:.3f} ent_a={after:.3f} "
             f"emotion={emo['delta']:.3f}"
