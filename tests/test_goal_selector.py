@@ -3,7 +3,7 @@ import sys
 import types
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from goals import goal_selector
+from goals import goal_updater as goal_selector
 from goals.goal_manager import GoalManager
 from memory.intention_graph import IntentionGraph
 

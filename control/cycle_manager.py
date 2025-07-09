@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from typing import List, Tuple, Optional
 
+
 from goals.goal_selector import (
     propose_goal,
     check_goal_shift,
