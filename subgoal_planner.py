@@ -6,11 +6,7 @@ import logging
 import os
 
 from utils.json_utils import parse_json_safe
-
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from llm_client import get_client
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +26,9 @@ def decompose_goal(
     temperature: float = 0.3,
 ) -> List[str]:
     """Return a list of subgoals decomposed from ``goal``."""
-    if openai is None:
-        raise ImportError("openai package not installed")
-
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise EnvironmentError("OPENAI_API_KEY not set")
+    client = get_client(os.getenv("OPENAI_API_KEY"))
+    if client is None:
+        raise EnvironmentError("OPENAI_API_KEY not set or client unavailable")
 
     user_content = f"Ziel: {goal}"
     if context:
@@ -47,8 +40,7 @@ def decompose_goal(
     ]
 
     try:
-        if hasattr(openai, "OpenAI"):
-            client = openai.OpenAI(api_key=api_key)
+        if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model=model,
                 temperature=temperature,
@@ -56,8 +48,7 @@ def decompose_goal(
             )
             text = response.choices[0].message.content
         else:
-            openai.api_key = api_key
-            response = openai.ChatCompletion.create(
+            response = client.ChatCompletion.create(
                 model=model,
                 temperature=temperature,
                 messages=messages,

@@ -8,10 +8,7 @@ from difflib import SequenceMatcher
 from typing import List, Tuple, Optional
 import re
 
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from llm_client import get_client
 
 logger = logging.getLogger(__name__)
 
@@ -27,18 +24,9 @@ _SYSTEM_PROMPT = (
 # ---------------------------------------------------------------------------
 # Goal proposal and shift utilities
 
-def _build_client(api_key: str | None):
-    if openai is None or not api_key:
-        return None
-    if hasattr(openai, "OpenAI"):
-        return openai.OpenAI(api_key=api_key)
-    openai.api_key = api_key
-    return openai
-
-
 def propose_goal(user_input: str, api_key: str | None = None) -> Optional[str]:
     """Ask the LLM to propose a new goal based on ``user_input``."""
-    client = _build_client(api_key or os.getenv("OPENAI_API_KEY"))
+    client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
     if client is None:
         return None
 
@@ -103,10 +91,10 @@ def check_goal_shift(current_goal: str, proposed_goal: str, api_key: str | None 
         return False
 
     key = api_key or os.getenv("OPENAI_API_KEY")
-    if openai is not None and key:
+    client = get_client(key)
+    if client is not None:
         try:
-            if hasattr(openai, "OpenAI"):
-                client = openai.OpenAI(api_key=key)
+            if hasattr(client, "embeddings"):
                 resp = client.embeddings.create(
                     model="text-embedding-ada-002",
                     input=[current_goal, proposed_goal],
@@ -114,8 +102,7 @@ def check_goal_shift(current_goal: str, proposed_goal: str, api_key: str | None 
                 vec1 = resp.data[0].embedding
                 vec2 = resp.data[1].embedding
             else:
-                openai.api_key = key
-                resp = openai.Embedding.create(
+                resp = client.Embedding.create(
                     model="text-embedding-ada-002",
                     input=[current_goal, proposed_goal],
                 )
@@ -171,13 +158,9 @@ def update_goal(
     if explicit and explicit.lower() not in last_goal.lower():
         return explicit
 
-    if openai is None:
-        logger.error("openai package not installed")
-        return last_goal
-
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        logger.error("No OpenAI API key provided")
+    client = get_client(os.getenv("OPENAI_API_KEY"))
+    if client is None:
+        logger.error("No OpenAI client available")
         return last_goal
 
     facts = "; ".join([f"{s} {p} {o}" for s, p, o in triplets])
@@ -194,8 +177,7 @@ def update_goal(
     ]
 
     try:
-        if hasattr(openai, "OpenAI"):
-            client = openai.OpenAI(api_key=api_key)
+        if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model="gpt-4o",
                 temperature=0,
@@ -203,8 +185,7 @@ def update_goal(
             )
             text = response.choices[0].message.content
         else:
-            openai.api_key = api_key
-            response = openai.ChatCompletion.create(
+            response = client.ChatCompletion.create(
                 model="gpt-4o",
                 temperature=0,
                 messages=messages,

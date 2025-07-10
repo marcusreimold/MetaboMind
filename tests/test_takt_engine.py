@@ -33,7 +33,7 @@ class DummyMem:
 
 def setup(monkeypatch, change_goal=False):
     mem = DummyMem()
-    monkeypatch.setattr(takt_engine, "MemoryManager", lambda: mem)
+    monkeypatch.setattr(takt_engine, "get_memory_manager", lambda: mem)
     monkeypatch.setattr(takt_engine.goal_engine, "get_current_goal", lambda: "A")
     if change_goal:
         monkeypatch.setattr(takt_engine.goal_engine, "update_goal", lambda **k: "B")

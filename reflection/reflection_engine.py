@@ -1,29 +1,24 @@
 import os
 from typing import Dict, List, Tuple
 
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from llm_client import get_client
 
 from control.metabo_rules import METABO_RULES
 
 
 def run_llm_task(prompt: str, api_key: str | None = None) -> str:
     """Execute a simple LLM chat completion and return the text."""
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key or openai is None:
+    client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
+    if client is None:
         return ""
 
     messages = [{"role": "user", "content": prompt}]
 
     try:
-        if hasattr(openai, "OpenAI"):
-            client = openai.OpenAI(api_key=key)
+        if hasattr(client, "chat"):
             resp = client.chat.completions.create(model="gpt-4o", temperature=0, messages=messages)
             return resp.choices[0].message.content.strip()
-        openai.api_key = key
-        resp = openai.ChatCompletion.create(model="gpt-4o", temperature=0, messages=messages)
+        resp = client.ChatCompletion.create(model="gpt-4o", temperature=0, messages=messages)
         return resp["choices"][0]["message"]["content"].strip()
     except Exception:  # pragma: no cover - network errors
         return ""
@@ -38,8 +33,8 @@ def generate_reflection(
 ) -> Dict[str, object]:
     """Generate a short reflection addressing the user input and goal."""
 
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key or openai is None:
+    client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
+    if client is None:
         return {
             "reflection": last_user_input,
             "explanation": "Kein OpenAI API-Schl\u00fcssel vorhanden; Eingabe unver\u00e4ndert.",
@@ -72,19 +67,7 @@ def generate_reflection(
         {"role": "user", "content": user_content},
     ]
 
-    user_content = f"Ziel: {goal}\nEingabe: {last_user_input}"
-    if last_reflection.strip():
-        user_content += f"\nLetzte Reflexion: {last_reflection.strip()}"
-    if facts:
-        user_content += f"\nTripel: {facts}"
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_content},
-    ]
-
-    if hasattr(openai, "OpenAI"):
-        client = openai.OpenAI(api_key=key)
+    if hasattr(client, "chat"):
         response = client.chat.completions.create(
             model="gpt-4o",
             temperature=0,
@@ -92,8 +75,7 @@ def generate_reflection(
         )
         content = response.choices[0].message.content
     else:
-        openai.api_key = key
-        response = openai.ChatCompletion.create(
+        response = client.ChatCompletion.create(
             model="gpt-4o",
             temperature=0,
             messages=messages,

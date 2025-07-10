@@ -8,10 +8,7 @@ from typing import List, Tuple
 from goals.goal_manager import GoalManager
 from goals.goal_updater import update_goal as _llm_update_goal
 
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from llm_client import get_client
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +31,9 @@ def generate_next_input(
     temperature: float = 0.7,
 ) -> str:
     """Generate a short statement that pursues ``goal`` further."""
-    if openai is None:
-        raise ImportError("openai package not installed")
-
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise EnvironmentError("OPENAI_API_KEY not set")
+    client = get_client(os.getenv("OPENAI_API_KEY"))
+    if client is None:
+        raise EnvironmentError("OPENAI_API_KEY not set or client unavailable")
 
     reflection = previous_reflection.strip()[:300] if previous_reflection else ""
     content = f"Ziel: {goal}"
@@ -52,8 +46,7 @@ def generate_next_input(
     ]
 
     try:
-        if hasattr(openai, "OpenAI"):
-            client = openai.OpenAI(api_key=api_key)
+        if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model=model,
                 temperature=temperature,
@@ -61,8 +54,7 @@ def generate_next_input(
             )
             text = response.choices[0].message.content
         else:
-            openai.api_key = api_key
-            response = openai.ChatCompletion.create(
+            response = client.ChatCompletion.create(
                 model=model,
                 temperature=temperature,
                 messages=messages,

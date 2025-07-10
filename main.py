@@ -6,6 +6,8 @@ from control.takt_engine import run_metabotakt
 from goals.goal_manager import set_goal
 from goals.goal_updater import update_goal
 from interface.metabo_gui import MetaboGUI
+import llm_client
+from memory_manager import get_memory_manager
 
 
 def print_help() -> None:
@@ -69,5 +71,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    llm_client.init_client()
+    get_memory_manager()
     gui = MetaboGUI()
     gui.run()

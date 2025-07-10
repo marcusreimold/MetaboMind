@@ -8,12 +8,12 @@ from memory.intention_graph import IntentionGraph
 
 
 def test_propose_goal_no_openai(monkeypatch):
-    monkeypatch.setattr(goal_selector, "openai", None)
+    monkeypatch.setattr(goal_selector, "get_client", lambda *a, **k: None)
     assert goal_selector.propose_goal("hi") is None
 
 
 def test_check_goal_shift_basic(monkeypatch):
-    monkeypatch.setattr(goal_selector, "openai", None)
+    monkeypatch.setattr(goal_selector, "get_client", lambda *a, **k: None)
     assert goal_selector.check_goal_shift("A", "B")
     assert not goal_selector.check_goal_shift("Goal", "Goal")
 

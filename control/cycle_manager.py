@@ -4,7 +4,7 @@ import os
 from typing import List, Tuple, Optional
 
 from goals import goal_engine
-from memory_manager import MemoryManager
+from memory_manager import get_memory_manager
 
 from logs.logger import MetaboLogger
 
@@ -18,7 +18,7 @@ class CycleManager:
 
     def __init__(self, api_key: str | None = None, logger: MetaboLogger | None = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.memory = MemoryManager()
+        self.memory = get_memory_manager()
         self.cycle = 0
         self.logger = logger
         self.logs: List[str] = []

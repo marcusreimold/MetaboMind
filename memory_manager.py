@@ -107,3 +107,27 @@ class MemoryManager:
             intensity = "high"
 
         return {"delta": delta, "emotion": emotion, "intensity": intensity}
+
+# ------------------------------------------------------------------
+# Global memory instance handling
+
+_default_manager: MemoryManager | None = None
+
+
+def get_memory_manager() -> MemoryManager:
+    """Return a shared :class:`MemoryManager` instance."""
+    global _default_manager
+    if _default_manager is None:
+        _default_manager = MemoryManager()
+    return _default_manager
+
+
+def _save_on_exit() -> None:
+    mgr = get_memory_manager()
+    try:
+        mgr.graph.save_graph()
+    except Exception:
+        pass
+
+import atexit
+atexit.register(_save_on_exit)

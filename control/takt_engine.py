@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Dict
 
 from goals import goal_engine
-from memory_manager import MemoryManager
+from memory_manager import get_memory_manager
 from reflection.reflection_engine import run_llm_task
 
 
 def run_metabotakt(api_key: str | None = None) -> Dict[str, object]:
     """Execute a Metabotakt without user input."""
-    memory = MemoryManager()
+    memory = get_memory_manager()
     current_goal = goal_engine.get_current_goal()
 
     last_entropy = memory.load_last_entropy()

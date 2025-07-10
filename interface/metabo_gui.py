@@ -230,8 +230,8 @@ class MetaboGUI:
 
     def _show_graph(self) -> None:
         try:
-            from memory.graph_manager import GraphManager
-            G = GraphManager().graph
+            from memory_manager import get_memory_manager
+            G = get_memory_manager().graph.graph
         except Exception as exc:  # pragma: no cover - visualisation is optional
             self._append_chat(
                 f"[Graph konnte nicht geladen werden: {exc}]\n",
