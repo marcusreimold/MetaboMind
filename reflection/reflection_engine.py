@@ -59,6 +59,7 @@ def generate_reflection(
             "Nutze die Tripel aus dem Ged\u00e4chtnis und die letzte Reflexion, um den Gedanken weiterzuentwickeln. "
             "Antworte der Nutzerin oder dem Nutzer in genau einem klaren Satz ohne Floskeln."
         )
+    )
 
     user_content = f"Ziel: {goal}\nEingabe: {last_user_input}"
     if last_reflection.strip():
