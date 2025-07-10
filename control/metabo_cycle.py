@@ -81,7 +81,6 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     emotion = interpret_emotion(entropy_before, entropy_after)
 
 
-
     try:
         log.log_cycle(
             input_text=user_input,
