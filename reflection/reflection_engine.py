@@ -1,84 +1,89 @@
 import os
 from typing import Dict, List, Tuple
 
-from utils.json_utils import parse_json_safe
-
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from llm_client import get_client
 
 from control.metabo_rules import METABO_RULES
 
 
-def generate_reflection(text: str, api_key: str | None = None) -> Dict[str, object]:
-    """Generate a reflection over the given text.
+def run_llm_task(prompt: str, api_key: str | None = None) -> str:
+    """Execute a simple LLM chat completion and return the text."""
+    client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
+    if client is None:
+        return ""
 
-    Parameters
-    ----------
-    text: str
-        Input statement or generated output of the LLM.
-    api_key: str | None
-        Optional API key for OpenAI. If omitted and no ``OPENAI_API_KEY``
-        environment variable exists, a simple offline reflection is returned.
+    messages = [{"role": "user", "content": prompt}]
 
-    Returns
-    -------
-    dict
-        Dictionary with keys ``reflection`` (improved text), ``explanation``
-        describing the improvement and optional ``triplets`` listing semantic
-        triples as ``(subject, predicate, object)`` tuples.
-    """
-    key = api_key or os.getenv("OPENAI_API_KEY")
-    if not key or openai is None:
+    try:
+        if hasattr(client, "chat"):
+            resp = client.chat.completions.create(model="gpt-4o", temperature=0, messages=messages)
+            return resp.choices[0].message.content.strip()
+        resp = client.ChatCompletion.create(model="gpt-4o", temperature=0, messages=messages)
+        return resp["choices"][0]["message"]["content"].strip()
+    except Exception:  # pragma: no cover - network errors
+        return ""
+
+
+def generate_reflection(
+    last_user_input: str,
+    goal: str,
+    last_reflection: str,
+    triplets: List[Tuple[str, str, str]] | None = None,
+    api_key: str | None = None,
+) -> Dict[str, object]:
+    """Generate a short reflection addressing the user input and goal."""
+
+    client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
+    if client is None:
         return {
-            "reflection": text,
-            "explanation": "Kein OpenAI API-Schlüssel vorhanden; Eingabe unverändert.",
+            "reflection": last_user_input,
+            "explanation": "Kein OpenAI API-Schl\u00fcssel vorhanden; Eingabe unver\u00e4ndert.",
             "triplets": [],
         }
+
+    if not goal.strip():
+        goal = f"Erkundung: {last_user_input.strip()[:40]}"
+
+    facts = "; ".join([f"{s} {p} {o}" for s, p, o in triplets or []])
 
     system_prompt = (
         METABO_RULES
         + (
-            "\nDu bist ein Denkagent in einem KI-System namens MetaboMind. "
-            "Deine Aufgabe ist es, auf eine Nutzereingabe im Kontext eines Ziels "
-            "zu antworten. Sprich dabei direkt zum Nutzer – nicht über die Eingabe. "
-            "Formuliere eine neue Aussage, die dem Ziel näherkommt. Nutze dein "
-            "vorhandenes Wissen und die letzte Reflexion, wenn sie dir hilft. "
-            "Antworte in einem einzigen natürlichen Satz. Keine Meta-Analyse, "
-            "keine Wiederholung des Ziels."
+            "\nDu bist ein Denkagent im KI-System MetaboMind. "
+            "Beziehe dich direkt auf die Nutzereingabe und verfolge dabei das Ziel. "
+            "Nutze die Tripel aus dem Ged\u00e4chtnis und die letzte Reflexion, um den Gedanken weiterzuentwickeln. "
+            "Antworte der Nutzerin oder dem Nutzer in genau einem klaren Satz ohne Floskeln."
         )
     )
 
-    if hasattr(openai, "OpenAI"):
-        client = openai.OpenAI(api_key=key)
+    user_content = f"Ziel: {goal}\nEingabe: {last_user_input}"
+    if last_reflection.strip():
+        user_content += f"\nLetzte Reflexion: {last_reflection.strip()}"
+    if facts:
+        user_content += f"\nTripel: {facts}"
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_content},
+    ]
+
+    if hasattr(client, "chat"):
         response = client.chat.completions.create(
             model="gpt-4o",
             temperature=0,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text},
-            ],
+            messages=messages,
         )
         content = response.choices[0].message.content
     else:
-        openai.api_key = key
-        response = openai.ChatCompletion.create(
+        response = client.ChatCompletion.create(
             model="gpt-4o",
             temperature=0,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text},
-            ],
+            messages=messages,
         )
         content = response["choices"][0]["message"]["content"]
-    data = parse_json_safe(content)
-    if isinstance(data, dict):
-        if "triplets" in data and isinstance(data["triplets"], list):
-            data["triplets"] = [tuple(t) for t in data["triplets"]]
-        return data
+
     return {
         "reflection": content.strip(),
-        "explanation": "Antwort nicht im JSON-Format parsbar.",
+        "explanation": "",  # kept for backwards compatibility
         "triplets": [],
     }

@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Utilities to run internal goal-driven actions."""
+
+from __future__ import annotations
 
 from goals.goal_engine import generate_next_input
 from goals.goal_manager import get_active_goal, load_last_reflection
