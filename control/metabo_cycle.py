@@ -4,6 +4,7 @@ import logging
 from typing import Dict
 
 from goals.goal_manager import GoalManager
+from goals.goal_updater import propose_goal, check_goal_shift
 from memory_manager import get_memory_manager
 from memory.context_selector import load_context
 from parsing.triplet_parser_llm import extract_triplets_via_llm
@@ -14,8 +15,17 @@ from reasoning.emotion import interpret_emotion
 from reasoning.entropy_analyzer import entropy_of_graph
 from goals.subgoal_planner import decompose_goal
 from goals.subgoal_executor import execute_first_subgoal
+from difflib import SequenceMatcher
 
 logger = logging.getLogger(__name__)
+
+
+def is_new_topic(user_input: str, current_goal: str) -> bool:
+    """Return True if ``user_input`` appears unrelated to ``current_goal``."""
+    if not user_input or not current_goal:
+        return False
+    prefix = user_input.lower().strip()[:25]
+    return prefix not in current_goal.lower()
 
 
 def run_metabo_cycle(user_input: str) -> Dict[str, object]:
@@ -26,6 +36,20 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
 
     goal = goal_mgr.get_goal()
     last_reflection = goal_mgr.load_reflection()
+
+    proposed = propose_goal(user_input)
+    if not proposed and is_new_topic(user_input, goal):
+        proposed = user_input.strip()
+
+    if proposed and check_goal_shift(goal, proposed):
+        if goal:
+            memory.graph.add_goal_transition(goal, proposed)
+        else:
+            memory.graph.goal_graph.add_node(proposed)
+            memory.graph._save_goal_graph()
+        goal_mgr.set_goal(proposed)
+        logger.info("Neues Ziel erkannt: %s -> %s", goal, proposed)
+        goal = proposed
 
     try:
         subgoals = decompose_goal(goal, last_reflection)
