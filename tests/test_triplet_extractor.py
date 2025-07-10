@@ -1,7 +1,6 @@
 import sys
 import os
 import logging
-import types
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from parsing import triplet_extractor
