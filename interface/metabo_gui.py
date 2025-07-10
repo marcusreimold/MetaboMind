@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 
 from control.metabo_cycle import run_metabo_cycle
+from control.takt_engine import run_metabotakt
 from goals.goal_manager import get_active_goal, set_goal
 
 
@@ -62,6 +63,7 @@ class MetaboGUI:
         self._build_emotion_tab()
         self._build_graph_tab()
         self._build_log_tab()
+        self._build_takt_tab()
 
     def _build_goals_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
@@ -114,6 +116,27 @@ class MetaboGUI:
         self.log_box.pack(fill=tk.BOTH, expand=True)
         self._load_log()
 
+    def _build_takt_tab(self) -> None:
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="Metabotakt")
+
+        run_btn = tk.Button(frame, text="Takt ausführen", command=self._run_takt)
+        run_btn.pack(pady=5)
+
+        self.takt_goal_var = tk.StringVar(value="-")
+        self.takt_emotion_var = tk.StringVar(value="-")
+        self.takt_delta_var = tk.StringVar(value="0")
+
+        tk.Label(frame, textvariable=self.takt_goal_var, wraplength=200).pack(anchor=tk.W)
+        tk.Label(frame, text="Emotion:").pack(anchor=tk.W)
+        tk.Label(frame, textvariable=self.takt_emotion_var).pack(anchor=tk.W)
+        tk.Label(frame, text="Δ-Entropie:").pack(anchor=tk.W)
+        tk.Label(frame, textvariable=self.takt_delta_var).pack(anchor=tk.W)
+
+        tk.Label(frame, text="Reflexion:").pack(anchor=tk.W, pady=(10, 0))
+        self.takt_reflection = ScrolledText(frame, height=5, state=tk.DISABLED)
+        self.takt_reflection.pack(fill=tk.BOTH, expand=True)
+
     # Button actions -----------------------------------------------------
     def _set_goal(self, goal: str) -> None:
         goal = goal.strip()
@@ -141,6 +164,24 @@ class MetaboGUI:
         self.emotion_var.set(result['emotion'])
         self.delta_var.set(f"{result['delta']:+.2f}")
         self._update_triplets(result.get('triplets', []))
+        self._load_log()
+
+    def _run_takt(self) -> None:
+        result = run_metabotakt()
+        self.goal_var.set(result["goal"])
+        msg = result.get("goal_update", "")
+        if msg:
+            self._append_chat(f"[{msg}]\n", "system")
+            self.takt_goal_var.set(msg)
+        else:
+            self.takt_goal_var.set(result["goal"])
+
+        self.takt_emotion_var.set(f"{result['emotion']} ({result['intensity']})")
+        self.takt_delta_var.set(f"{result['delta']:+.2f}")
+        self.takt_reflection.configure(state=tk.NORMAL)
+        self.takt_reflection.delete("1.0", tk.END)
+        self.takt_reflection.insert(tk.END, result["reflection"])
+        self.takt_reflection.configure(state=tk.DISABLED)
         self._load_log()
 
     # Update helpers ----------------------------------------------------
