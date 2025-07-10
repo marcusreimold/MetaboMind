@@ -39,3 +39,12 @@ def test_explicit_command(monkeypatch):
     monkeypatch.setattr(goal_updater, "get_client", lambda *a, **k: None)
     res = goal_updater.update_goal("Beschäftige dich mit Z", "Alt", "", [])
     assert res == "Z"
+
+
+def test_proposed_goal_via_llm(monkeypatch):
+    monkeypatch.setattr(goal_updater, "_extract_explicit_goal", lambda t: None)
+    monkeypatch.setattr(goal_updater, "propose_goal", lambda t: "Neu")
+    monkeypatch.setattr(goal_updater, "check_goal_shift", lambda a, b: True)
+    monkeypatch.setattr(goal_updater, "get_client", lambda *a, **k: None)
+    res = goal_updater.update_goal("hi", "Alt", "", [])
+    assert res == "Neu"

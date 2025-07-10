@@ -10,7 +10,7 @@ from logs.logger import MetaboLogger
 
 from parsing.triplet_parser_llm import extract_triplets_via_llm
 
-from reflection.reflection_engine import generate_reflection
+from reflection.reflection_engine import generate_reflection, run_llm_task
 
 
 class CycleManager:
@@ -65,12 +65,19 @@ class CycleManager:
         )
 
         goal_message = ""
+        goal_reflection = ""
         if new_goal != self.current_goal:
             if self.current_goal:
                 self.memory.graph.add_goal_transition(self.current_goal, new_goal)
             else:
                 self.memory.graph.goal_graph.add_node(new_goal)
                 self.memory.graph._save_goal_graph()
+            goal_reflection = run_llm_task(
+                f"Reflektiere kurz den Zielwechsel von '{self.current_goal}' zu '{new_goal}'.",
+                api_key=self.api_key,
+            )
+            if goal_reflection:
+                self.memory.store_reflection(goal_reflection)
             self.current_goal = new_goal
             goal_message = f"Neues Ziel erkannt: {self.current_goal}"
 
@@ -107,4 +114,5 @@ class CycleManager:
             "log_entry": log_entry,
             "goal": self.current_goal,
             "goal_update": goal_message,
+            "goal_reflection": goal_reflection,
         }

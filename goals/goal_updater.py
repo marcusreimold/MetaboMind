@@ -154,9 +154,14 @@ def update_goal(
     triplets: List[Tuple[str, str, str]],
 ) -> str:
     """Return a new goal if the focus changed, otherwise ``last_goal``."""
+
     explicit = _extract_explicit_goal(user_input)
-    if explicit and explicit.lower() not in last_goal.lower():
+    if explicit and check_goal_shift(last_goal, explicit):
         return explicit
+
+    proposed = propose_goal(user_input)
+    if proposed and check_goal_shift(last_goal, proposed):
+        return proposed
 
     client = get_client(os.getenv("OPENAI_API_KEY"))
     if client is None:
