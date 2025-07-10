@@ -3,13 +3,16 @@ from __future__ import annotations
 
 import logging
 import os
+from typing import List, Tuple
 
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from goals.goal_manager import GoalManager
+from goals.goal_updater import update_goal as _llm_update_goal
+
+from llm_client import get_client
 
 logger = logging.getLogger(__name__)
+
+_GOAL_MGR = GoalManager()
 
 _SYSTEM_PROMPT = (
     "Du bist ein Denkagent in einem KI-System namens MetaboMind. "
@@ -28,12 +31,9 @@ def generate_next_input(
     temperature: float = 0.7,
 ) -> str:
     """Generate a short statement that pursues ``goal`` further."""
-    if openai is None:
-        raise ImportError("openai package not installed")
-
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise EnvironmentError("OPENAI_API_KEY not set")
+    client = get_client(os.getenv("OPENAI_API_KEY"))
+    if client is None:
+        raise EnvironmentError("OPENAI_API_KEY not set or client unavailable")
 
     reflection = previous_reflection.strip()[:300] if previous_reflection else ""
     content = f"Ziel: {goal}"
@@ -46,8 +46,7 @@ def generate_next_input(
     ]
 
     try:
-        if hasattr(openai, "OpenAI"):
-            client = openai.OpenAI(api_key=api_key)
+        if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model=model,
                 temperature=temperature,
@@ -55,8 +54,7 @@ def generate_next_input(
             )
             text = response.choices[0].message.content
         else:
-            openai.api_key = api_key
-            response = openai.ChatCompletion.create(
+            response = client.ChatCompletion.create(
                 model=model,
                 temperature=temperature,
                 messages=messages,
@@ -69,6 +67,29 @@ def generate_next_input(
     if not text or not text.strip():
         return "Verantwortung ist der Preis der Freiheit."
     return text.strip()
+
+
+def get_current_goal() -> str:
+    """Return the currently stored goal."""
+    return _GOAL_MGR.get_goal()
+
+
+def update_goal(
+    user_input: str,
+    last_reflection: str,
+    triplets: List[Tuple[str, str, str]],
+) -> str:
+    """Determine and persist a new goal based on ``user_input``."""
+    current = _GOAL_MGR.get_goal()
+    new_goal = _llm_update_goal(
+        user_input=user_input,
+        last_goal=current,
+        last_reflection=last_reflection,
+        triplets=triplets,
+    )
+    if new_goal != current:
+        _GOAL_MGR.set_goal(new_goal)
+    return new_goal
 
 
 if __name__ == "__main__":
