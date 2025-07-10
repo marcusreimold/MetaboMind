@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from goals import goal_engine
 from memory_manager import MemoryManager
