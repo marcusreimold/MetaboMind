@@ -6,34 +6,35 @@ from control.cycle_manager import CycleManager
 
 
 def setup_common(monkeypatch, cm):
-    monkeypatch.setattr(cm.graph, "_save_goal_graph", lambda: None)
-    monkeypatch.setattr(cm.graph, "save_graph", lambda: None)
+    monkeypatch.setattr(cm.memory.graph, "_save_goal_graph", lambda: None)
+    monkeypatch.setattr(cm.memory.graph, "save_graph", lambda: None)
     monkeypatch.setattr("control.cycle_manager.extract_triplets_via_llm", lambda text: [])
     monkeypatch.setattr("control.cycle_manager.generate_reflection", lambda **k: {"reflection": ""})
+    monkeypatch.setattr(cm.memory, "save_emotion", lambda *a, **k: {"delta": 0.0, "emotion": "neutral", "intensity": "low"})
+    monkeypatch.setattr(cm.memory, "store_reflection", lambda text: None)
 
 
 def test_goal_switch(monkeypatch):
     cm = CycleManager(api_key=None, logger=None)
     setup_common(monkeypatch, cm)
-    monkeypatch.setattr("control.cycle_manager.propose_goal", lambda t, api_key=None: "Neu")
-    monkeypatch.setattr("control.cycle_manager.check_goal_shift", lambda cur, new, api_key=None: True)
-    called = {}
-    def fake_apply(cur, new, gm, graph):
-        called["args"] = (cur, new)
-        gm.set_goal(new)
-    monkeypatch.setattr("control.cycle_manager.apply_goal_shift", fake_apply)
+    monkeypatch.setattr(
+        "control.cycle_manager.goal_engine.update_goal",
+        lambda user_input, last_reflection, triplets: "Neu",
+    )
     cm.current_goal = "Alt"
     res = cm.run_cycle("irgendwas")
     assert cm.current_goal == "Neu"
     assert res["goal"] == "Neu"
-    assert called["args"] == ("Alt", "Neu")
     assert "Neues Ziel" in res["goal_update"]
 
 
 def test_no_goal_switch(monkeypatch):
     cm = CycleManager(api_key=None, logger=None)
     setup_common(monkeypatch, cm)
-    monkeypatch.setattr("control.cycle_manager.propose_goal", lambda t, api_key=None: None)
+    monkeypatch.setattr(
+        "control.cycle_manager.goal_engine.update_goal",
+        lambda *args, **kw: cm.current_goal,
+    )
     cm.current_goal = "Alt"
     res = cm.run_cycle("etwas")
     assert cm.current_goal == "Alt"
@@ -43,9 +44,12 @@ def test_no_goal_switch(monkeypatch):
 def test_first_goal(monkeypatch):
     cm = CycleManager(api_key=None, logger=None)
     setup_common(monkeypatch, cm)
-    monkeypatch.setattr("control.cycle_manager.propose_goal", lambda t, api_key=None: "Start")
+    monkeypatch.setattr(
+        "control.cycle_manager.goal_engine.update_goal",
+        lambda *args, **kw: "Start",
+    )
     cm.current_goal = ""
     res = cm.run_cycle("hey")
     assert cm.current_goal == "Start"
     assert res["goal"] == "Start"
-    assert res["goal_update"] == ""
+    assert "Neues Ziel" in res["goal_update"]
