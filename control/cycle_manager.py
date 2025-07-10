@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from goals import goal_engine
 from memory_manager import MemoryManager
@@ -11,6 +11,7 @@ from logs.logger import MetaboLogger
 from parsing.triplet_parser_llm import extract_triplets_via_llm
 
 from reflection.reflection_engine import generate_reflection
+from goals.goal_manager import GoalManager
 
 
 class CycleManager:
@@ -49,7 +50,6 @@ class CycleManager:
     def run_cycle(self, text: str) -> dict:
         """Run a single Metabo cycle with the provided text and return results."""
         self.cycle += 1
-
         if self.api_key:
             triplets = extract_triplets_via_llm(text)
         else:
