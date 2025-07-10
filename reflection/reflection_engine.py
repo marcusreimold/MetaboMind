@@ -31,17 +31,34 @@ def run_llm_task(prompt: str, api_key: str | None = None) -> str:
         return ""
 
 
-def detect_goal_shift(user_input: str, current_goal: str, api_key: str | None = None) -> tuple[bool, Optional[str]]:
-    """Return ``(change_goal, new_goal)`` based on ``user_input`` and ``current_goal``."""
+def detect_goal_shift(
+    user_input: str,
+    current_goal: str,
+    api_key: str | None = None,
+    previous_user_inputs: list[str] | None = None,
+    last_system_output: str = "",
+) -> tuple[bool, Optional[str]]:
+    """Return ``(change_goal, new_goal)`` based on conversation context."""
     client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
     if client is None:
         return False, None
 
+    previous_user_inputs = previous_user_inputs or []
+
     system = (
-        "Du bist ein Zielerkennungsmodul. Prüfe, ob der Nutzer ein neues Thema vorschlägt. "
-        "Vergleiche es mit dem aktuellen Ziel und gib ein JSON-Objekt zurück."
+        "Du bist ein Zielerkennungsmodul im KI-System MetaboMind. "
+        "Analysiere die aktuelle und vorherige Konversation, um zu erkennen, "
+        "ob ein neues Thema vorgeschlagen wird. Gib ein JSON-Objekt zurück."
     )
-    user = f"Aktuelles Ziel: {current_goal}\nEingabe: {user_input}"
+
+    parts = [f"Aktuelles Ziel: {current_goal}"]
+    if previous_user_inputs:
+        recent = ' | '.join(previous_user_inputs[-2:])
+        parts.append(f"Vorherige Nutzereingaben: {recent}")
+    if last_system_output.strip():
+        parts.append(f"Letzte Systemantwort: {last_system_output.strip()}")
+    parts.append(f"Eingabe: {user_input}")
+    user = "\n".join(parts)
 
     functions = [
         {
@@ -103,6 +120,8 @@ def generate_reflection(
     last_reflection: str,
     triplets: List[Tuple[str, str, str]] | None = None,
     api_key: str | None = None,
+    previous_user_inputs: list[str] | None = None,
+    last_system_output: str = "",
 ) -> Dict[str, object]:
     """Generate a short reflection addressing the user input and goal."""
 
@@ -117,7 +136,13 @@ def generate_reflection(
     if not goal.strip():
         goal = f"Erkundung: {last_user_input.strip()[:40]}"
 
-    changed, proposed = detect_goal_shift(last_user_input, goal, api_key)
+    changed, proposed = detect_goal_shift(
+        last_user_input,
+        goal,
+        api_key=api_key,
+        previous_user_inputs=previous_user_inputs,
+        last_system_output=last_system_output,
+    )
     goal_update_msg = ""
     memory = get_memory_manager()
     if changed and proposed and proposed.strip() and proposed != goal:
