@@ -1,6 +1,5 @@
 import os
 import sys
-import types
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from goals import goal_updater as goal_selector

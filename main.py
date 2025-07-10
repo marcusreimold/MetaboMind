@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from control.metabo_cycle import run_metabo_cycle
-from goals.goal_manager import set_goal, get_active_goal
+from goals.goal_manager import set_goal
 from goals.goal_updater import update_goal
 from interface.metabo_gui import MetaboGUI
 

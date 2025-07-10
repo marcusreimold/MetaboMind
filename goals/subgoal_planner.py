@@ -72,7 +72,7 @@ def decompose_goal(
     if isinstance(data, list) and all(isinstance(s, str) for s in data):
         subgoals = [s.strip() for s in data if s.strip()]
     else:
-        lines = [l.strip("-•* \t") for l in text.splitlines() if l.strip()]
+        lines = [line.strip("-•* \t") for line in text.splitlines() if line.strip()]
         if 2 <= len(lines) <= 5:
             subgoals = lines
 

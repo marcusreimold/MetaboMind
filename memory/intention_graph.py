@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import List, Tuple
 
 import networkx as nx
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
 class IntentionGraph:

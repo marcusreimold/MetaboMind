@@ -3,8 +3,7 @@ from __future__ import annotations
 import os
 from typing import List, Tuple, Optional
 
-
-from goals.goal_selector import (
+from goals.goal_updater import (
     propose_goal,
     check_goal_shift,
     apply_goal_shift,
@@ -33,6 +32,7 @@ class CycleManager:
         self.logs: List[str] = []
         self.goal_mgr = GoalManager()
         self.current_goal = self.goal_mgr.get_goal()
+
 
     def _extract_triplets(self, text: str) -> List[Tuple[str, str, str]]:
         """Naive fallback extraction of triples when no API key is available."""
