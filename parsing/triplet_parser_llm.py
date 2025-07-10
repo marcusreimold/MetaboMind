@@ -7,10 +7,7 @@ import os
 import logging
 from typing import List, Tuple
 
-try:
-    import openai  # type: ignore
-except ImportError:  # pragma: no cover - optional dependency
-    openai = None
+from llm_client import get_client
 
 # System prompt instructing the model
 
@@ -92,18 +89,13 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
 
 def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tuple[str, str, str]]:
     """Extract semantic triples from ``text`` using an OpenAI chat model."""
-    if openai is None:
-        logger.error("openai package not installed")
-        return []
-
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        logger.error("No OpenAI API key provided")
+    client = get_client(os.getenv("OPENAI_API_KEY"))
+    if client is None:
+        logger.error("No OpenAI API key provided or client unavailable")
         return []
 
     try:
-        if hasattr(openai, "OpenAI"):
-            client = openai.OpenAI(api_key=api_key)
+        if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model=model,
                 temperature=0,
@@ -113,8 +105,7 @@ def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tu
                 ],
             )
         else:
-            openai.api_key = api_key
-            response = openai.ChatCompletion.create(
+            response = client.ChatCompletion.create(
                 model=model,
                 temperature=0,
                 messages=[
