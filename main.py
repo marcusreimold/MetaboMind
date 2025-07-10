@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from control.metabo_cycle import run_metabo_cycle
-from goals.goal_manager import set_goal, get_active_goal
+from control.takt_engine import run_metabotakt
+from goals.goal_manager import set_goal
+from goals.goal_updater import update_goal
 from interface.metabo_gui import MetaboGUI
 
 
@@ -33,6 +35,14 @@ def main() -> None:
         if user_input == "/hilfe":
             print_help()
             continue
+        if user_input == "/takt":
+            result = run_metabotakt()
+            print("[Metabotakt ausgeführt]")
+            if result["goal_update"]:
+                print(result["goal_update"])
+            print(f"ΔE: {result['delta']:+.2f} -> {result['emotion']} ({result['intensity']})")
+            print(f"Reflexion: {result['reflection']}")
+            continue
         if user_input.startswith("/ziel"):
             new_goal = user_input[len("/ziel"):].strip()
             if not new_goal:
@@ -43,8 +53,15 @@ def main() -> None:
             continue
 
         result = run_metabo_cycle(user_input)
+        new_goal = update_goal(
+            user_input=user_input,
+            last_goal=result.get("goal", ""),
+            last_reflection=result.get("reflection", ""),
+            triplets=result.get("triplets", []),
+        )
+        set_goal(new_goal)
         print("[Zyklus abgeschlossen]")
-        print(f"Ziel: {result['goal']}")
+        print(f"Aktuelles Ziel: {new_goal}")
         print(f"Antwort: {result['reflection']}")
         print(f"Emotion: {result['emotion']} (Δ={result['delta']:+.2f})")
         if result['triplets']:

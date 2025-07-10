@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 
 from control.metabo_cycle import run_metabo_cycle
+from control.takt_engine import run_metabotakt
 from goals.goal_manager import get_active_goal, set_goal
 
 
@@ -17,6 +18,12 @@ class MetaboGUI:
     def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.title("MetaboMind GUI")
+        self.root.geometry("800x600")
+
+        style = ttk.Style(self.root)
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+        style.configure("TButton", padding=6)
 
         self._build_layout()
 
@@ -31,6 +38,8 @@ class MetaboGUI:
 
         self.chat = ScrolledText(left_frame, state=tk.DISABLED, wrap=tk.WORD)
         self.chat.pack(fill=tk.BOTH, expand=True)
+        self.chat.tag_config("user", foreground="blue")
+        self.chat.tag_config("system", foreground="green")
 
         input_frame = tk.Frame(left_frame)
         input_frame.pack(fill=tk.X)
@@ -54,6 +63,7 @@ class MetaboGUI:
         self._build_emotion_tab()
         self._build_graph_tab()
         self._build_log_tab()
+        self._build_takt_tab()
 
     def _build_goals_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
@@ -106,6 +116,27 @@ class MetaboGUI:
         self.log_box.pack(fill=tk.BOTH, expand=True)
         self._load_log()
 
+    def _build_takt_tab(self) -> None:
+        frame = ttk.Frame(self.notebook)
+        self.notebook.add(frame, text="Metabotakt")
+
+        run_btn = tk.Button(frame, text="Takt ausführen", command=self._run_takt)
+        run_btn.pack(pady=5)
+
+        self.takt_goal_var = tk.StringVar(value="-")
+        self.takt_emotion_var = tk.StringVar(value="-")
+        self.takt_delta_var = tk.StringVar(value="0")
+
+        tk.Label(frame, textvariable=self.takt_goal_var, wraplength=200).pack(anchor=tk.W)
+        tk.Label(frame, text="Emotion:").pack(anchor=tk.W)
+        tk.Label(frame, textvariable=self.takt_emotion_var).pack(anchor=tk.W)
+        tk.Label(frame, text="Δ-Entropie:").pack(anchor=tk.W)
+        tk.Label(frame, textvariable=self.takt_delta_var).pack(anchor=tk.W)
+
+        tk.Label(frame, text="Reflexion:").pack(anchor=tk.W, pady=(10, 0))
+        self.takt_reflection = ScrolledText(frame, height=5, state=tk.DISABLED)
+        self.takt_reflection.pack(fill=tk.BOTH, expand=True)
+
     # Button actions -----------------------------------------------------
     def _set_goal(self, goal: str) -> None:
         goal = goal.strip()
@@ -113,7 +144,7 @@ class MetaboGUI:
             return
         set_goal(goal)
         self.goal_var.set(goal)
-        self._append_chat(f"[Neues Ziel gesetzt: {goal}]\n")
+        self._append_chat(f"[Neues Ziel gesetzt: {goal}]\n", "system")
 
     def _on_send(self, event=None) -> None:  # type: ignore[override]
         user_input = self.entry.get().strip()
@@ -121,9 +152,9 @@ class MetaboGUI:
             return
         self.entry.delete(0, tk.END)
 
-        self._append_chat(f"Du: {user_input}\n")
+        self._append_chat(f"Du: {user_input}\n", "user")
         result = run_metabo_cycle(user_input)
-        self._append_chat(f"System: {result['reflection']}\n")
+        self._append_chat(f"System: {result['reflection']}\n", "system")
         self.chat.see(tk.END)
 
         # Update tabs
@@ -135,10 +166,31 @@ class MetaboGUI:
         self._update_triplets(result.get('triplets', []))
         self._load_log()
 
+    def _run_takt(self) -> None:
+        result = run_metabotakt()
+        self.goal_var.set(result["goal"])
+        msg = result.get("goal_update", "")
+        if msg:
+            self._append_chat(f"[{msg}]\n", "system")
+            self.takt_goal_var.set(msg)
+        else:
+            self.takt_goal_var.set(result["goal"])
+
+        self.takt_emotion_var.set(f"{result['emotion']} ({result['intensity']})")
+        self.takt_delta_var.set(f"{result['delta']:+.2f}")
+        self.takt_reflection.configure(state=tk.NORMAL)
+        self.takt_reflection.delete("1.0", tk.END)
+        self.takt_reflection.insert(tk.END, result["reflection"])
+        self.takt_reflection.configure(state=tk.DISABLED)
+        self._load_log()
+
     # Update helpers ----------------------------------------------------
-    def _append_chat(self, text: str) -> None:
+    def _append_chat(self, text: str, tag: str = "") -> None:
         self.chat.configure(state=tk.NORMAL)
-        self.chat.insert(tk.END, text)
+        if tag:
+            self.chat.insert(tk.END, text, tag)
+        else:
+            self.chat.insert(tk.END, text)
         self.chat.configure(state=tk.DISABLED)
 
     def _update_subgoals(self, subgoals: list[str]) -> None:
@@ -181,7 +233,10 @@ class MetaboGUI:
             from memory.graph_manager import GraphManager
             G = GraphManager().graph
         except Exception as exc:  # pragma: no cover - visualisation is optional
-            self._append_chat(f"[Graph konnte nicht geladen werden: {exc}]\n")
+            self._append_chat(
+                f"[Graph konnte nicht geladen werden: {exc}]\n",
+                "system",
+            )
             return
 
         win = tk.Toplevel(self.root)
