@@ -17,6 +17,12 @@ class MetaboGUI:
     def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.title("MetaboMind GUI")
+        self.root.geometry("800x600")
+
+        style = ttk.Style(self.root)
+        if "clam" in style.theme_names():
+            style.theme_use("clam")
+        style.configure("TButton", padding=6)
 
         self._build_layout()
 
@@ -31,6 +37,8 @@ class MetaboGUI:
 
         self.chat = ScrolledText(left_frame, state=tk.DISABLED, wrap=tk.WORD)
         self.chat.pack(fill=tk.BOTH, expand=True)
+        self.chat.tag_config("user", foreground="blue")
+        self.chat.tag_config("system", foreground="green")
 
         input_frame = tk.Frame(left_frame)
         input_frame.pack(fill=tk.X)
@@ -113,7 +121,7 @@ class MetaboGUI:
             return
         set_goal(goal)
         self.goal_var.set(goal)
-        self._append_chat(f"[Neues Ziel gesetzt: {goal}]\n")
+        self._append_chat(f"[Neues Ziel gesetzt: {goal}]\n", "system")
 
     def _on_send(self, event=None) -> None:  # type: ignore[override]
         user_input = self.entry.get().strip()
@@ -121,9 +129,9 @@ class MetaboGUI:
             return
         self.entry.delete(0, tk.END)
 
-        self._append_chat(f"Du: {user_input}\n")
+        self._append_chat(f"Du: {user_input}\n", "user")
         result = run_metabo_cycle(user_input)
-        self._append_chat(f"System: {result['reflection']}\n")
+        self._append_chat(f"System: {result['reflection']}\n", "system")
         self.chat.see(tk.END)
 
         # Update tabs
@@ -136,9 +144,12 @@ class MetaboGUI:
         self._load_log()
 
     # Update helpers ----------------------------------------------------
-    def _append_chat(self, text: str) -> None:
+    def _append_chat(self, text: str, tag: str = "") -> None:
         self.chat.configure(state=tk.NORMAL)
-        self.chat.insert(tk.END, text)
+        if tag:
+            self.chat.insert(tk.END, text, tag)
+        else:
+            self.chat.insert(tk.END, text)
         self.chat.configure(state=tk.DISABLED)
 
     def _update_subgoals(self, subgoals: list[str]) -> None:
@@ -181,7 +192,10 @@ class MetaboGUI:
             from memory.graph_manager import GraphManager
             G = GraphManager().graph
         except Exception as exc:  # pragma: no cover - visualisation is optional
-            self._append_chat(f"[Graph konnte nicht geladen werden: {exc}]\n")
+            self._append_chat(
+                f"[Graph konnte nicht geladen werden: {exc}]\n",
+                "system",
+            )
             return
 
         win = tk.Toplevel(self.root)
