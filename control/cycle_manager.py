@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from goals.goal_updater import (
     propose_goal,
