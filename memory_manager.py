@@ -36,7 +36,6 @@ class MemoryManager:
         before = entropy_of_graph(self.graph.snapshot())
         if triplets:
             self.graph.add_triplets(triplets)
-            self.graph.save_graph()
         after = entropy_of_graph(self.graph.snapshot())
         return before, after
 
@@ -121,13 +120,3 @@ def get_memory_manager() -> MemoryManager:
         _default_manager = MemoryManager()
     return _default_manager
 
-
-def _save_on_exit() -> None:
-    mgr = get_memory_manager()
-    try:
-        mgr.graph.save_graph()
-    except Exception:
-        pass
-
-import atexit
-atexit.register(_save_on_exit)

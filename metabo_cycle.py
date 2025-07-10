@@ -74,17 +74,11 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     if triplets:
         try:
             memory.graph.add_triplets(triplets)
-            memory.graph.save_graph()
         except Exception as exc:
             logger.warning("graph update failed: %s", exc)
 
     entropy_after = entropy_of_graph(memory.graph.snapshot())
     emotion = interpret_emotion(entropy_before, entropy_after)
-
-    try:
-        memory.graph.save_graph()
-    except Exception as exc:
-        logger.warning("graph save failed: %s", exc)
 
     try:
         log.log_cycle(

@@ -26,12 +26,22 @@ class MetaboGUI:
         self.root.geometry("800x600")
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
+        self._build_menu()
+
         style = ttk.Style(self.root)
         if "clam" in style.theme_names():
             style.theme_use("clam")
         style.configure("TButton", padding=6)
 
         self._build_layout()
+
+    # Layout helpers -----------------------------------------------------
+    def _build_menu(self) -> None:
+        menubar = tk.Menu(self.root)
+        file_menu = tk.Menu(menubar, tearoff=0)
+        file_menu.add_command(label="Graph speichern", command=self._save_graph)
+        menubar.add_cascade(label="Datei", menu=file_menu)
+        self.root.config(menu=menubar)
 
     # Layout helpers -----------------------------------------------------
     def _build_layout(self) -> None:
@@ -254,12 +264,18 @@ class MetaboGUI:
             text.insert(tk.END, f"{u} --{rel}--> {v}\n")
         text.configure(state=tk.DISABLED)
 
-    def _on_close(self) -> None:
-        """Save graph on window close."""
+    def _save_graph(self) -> None:
+        """Persist the knowledge graph and notify the user."""
         try:
             self.memory.graph.save_graph()
-        finally:
-            self.root.destroy()
+            self._append_chat("[Graph gespeichert]\n", "system")
+        except Exception as exc:  # pragma: no cover - error handling
+            self._append_chat(f"[Fehler beim Speichern: {exc}]\n", "system")
+
+    def _on_close(self) -> None:
+        """Save graph on window close."""
+        self._save_graph()
+        self.root.destroy()
 
     # Public API --------------------------------------------------------
     def run(self) -> None:
