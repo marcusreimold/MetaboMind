@@ -8,25 +8,27 @@ from goals import goal_engine
 
 
 def test_missing_openai(monkeypatch):
-    monkeypatch.setattr(goal_engine, "openai", None)
-    with pytest.raises(ImportError):
+    monkeypatch.setattr(goal_engine, "get_client", lambda *a, **k: None)
+    with pytest.raises(EnvironmentError):
         goal_engine.generate_next_input("Test")
 
 
 def test_missing_api_key(monkeypatch):
-    dummy = types.SimpleNamespace(ChatCompletion=types.SimpleNamespace(create=lambda **k: None))
-    monkeypatch.setattr(goal_engine, "openai", dummy)
+    monkeypatch.setattr(goal_engine, "get_client", lambda *a, **k: None)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     with pytest.raises(EnvironmentError):
         goal_engine.generate_next_input("Test")
 
 
 def test_fallback_default(monkeypatch):
-    dummy = types.SimpleNamespace()
-    def create(model, temperature, messages):
-        return {"choices": [{"message": {"content": ""}}]}
-    dummy.ChatCompletion = types.SimpleNamespace(create=create)
-    monkeypatch.setattr(goal_engine, "openai", dummy)
+    class Dummy:
+        def __init__(self):
+            self.chat = types.SimpleNamespace(completions=types.SimpleNamespace(create=self.create))
+
+        def create(self, *a, **k):
+            return types.SimpleNamespace(choices=[types.SimpleNamespace(message=types.SimpleNamespace(content=""))])
+
+    monkeypatch.setattr(goal_engine, "get_client", lambda *a, **k: Dummy())
     monkeypatch.setenv("OPENAI_API_KEY", "x")
     out = goal_engine.generate_next_input("Goal")
     assert out == "Verantwortung ist der Preis der Freiheit."
