@@ -10,15 +10,21 @@ from tkinter.scrolledtext import ScrolledText
 from control.metabo_cycle import run_metabo_cycle
 from control.takt_engine import run_metabotakt
 from goals.goal_manager import get_active_goal, set_goal
+from memory_manager import get_memory_manager
+import llm_client
 
 
 class MetaboGUI:
     """Simple interface wrapping the CLI functionality."""
 
     def __init__(self) -> None:
+        llm_client.init_client()
+        self.memory = get_memory_manager()
+
         self.root = tk.Tk()
         self.root.title("MetaboMind GUI")
         self.root.geometry("800x600")
+        self.root.protocol("WM_DELETE_WINDOW", self._on_close)
 
         style = ttk.Style(self.root)
         if "clam" in style.theme_names():
@@ -247,6 +253,13 @@ class MetaboGUI:
             rel = data.get('relation', '')
             text.insert(tk.END, f"{u} --{rel}--> {v}\n")
         text.configure(state=tk.DISABLED)
+
+    def _on_close(self) -> None:
+        """Save graph on window close."""
+        try:
+            self.memory.graph.save_graph()
+        finally:
+            self.root.destroy()
 
     # Public API --------------------------------------------------------
     def run(self) -> None:

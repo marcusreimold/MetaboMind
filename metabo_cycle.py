@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 
 from goal_manager import GoalManager
-from graph_manager import GraphManager
+from memory_manager import get_memory_manager
 from context_selector import load_context
 from triplet_parser_llm import extract_triplets_via_llm
 from recall_context import recall_context
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     """Execute one MetaboMind cycle and return a structured result."""
     goal_mgr = GoalManager()
-    graph_mgr = GraphManager()
+    memory = get_memory_manager()
     log = MetaboLogger()
 
     goal = goal_mgr.get_goal()
@@ -34,11 +34,11 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         subgoals = [goal]
     goal = execute_first_subgoal(goal, subgoals)
 
-    graph_snapshot = graph_mgr.snapshot()
+    graph_snapshot = memory.graph.snapshot()
     entropy_before = entropy_of_graph(graph_snapshot)
 
     try:
-        context_nodes = load_context(graph_mgr.graph, goal)
+        context_nodes = load_context(memory.graph.graph, goal)
     except Exception as exc:
         logger.warning("context selection failed: %s", exc)
         context_nodes = []
@@ -73,15 +73,16 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
 
     if triplets:
         try:
-            graph_mgr.add_triplets(triplets)
+            memory.graph.add_triplets(triplets)
+            memory.graph.save_graph()
         except Exception as exc:
             logger.warning("graph update failed: %s", exc)
 
-    entropy_after = entropy_of_graph(graph_mgr.snapshot())
+    entropy_after = entropy_of_graph(memory.graph.snapshot())
     emotion = interpret_emotion(entropy_before, entropy_after)
 
     try:
-        graph_mgr.save()
+        memory.graph.save_graph()
     except Exception as exc:
         logger.warning("graph save failed: %s", exc)
 
