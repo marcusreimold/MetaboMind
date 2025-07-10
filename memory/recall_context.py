@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Dict
 import networkx as nx
 
-from memory.intention_graph import IntentionGraph
+from memory_manager import get_memory_manager
 from goals.goal_manager import get_active_goal
 
 
@@ -30,8 +30,7 @@ def recall_context(limit: int = 10, scope: str = "global") -> List[Dict[str, str
         value returns a global selection of edges ordered by node degree.
     """
 
-    ig = IntentionGraph()
-    G: nx.MultiDiGraph = ig.graph
+    G: nx.MultiDiGraph = get_memory_manager().graph.graph
 
     edges: List[tuple] = []
     if scope == "goal":
