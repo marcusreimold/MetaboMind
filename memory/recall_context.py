@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Dict
 import networkx as nx
 
-from memory_manager import get_memory_manager
+from memory.memory_manager import get_memory_manager
 from goals.goal_manager import get_active_goal
 
 

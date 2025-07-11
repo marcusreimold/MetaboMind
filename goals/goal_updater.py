@@ -8,7 +8,7 @@ from difflib import SequenceMatcher
 from typing import List, Tuple, Optional
 import re
 
-from llm_client import get_client
+from utils.llm_client import get_client
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 logger = logging.getLogger(__name__)

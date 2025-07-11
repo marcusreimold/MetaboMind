@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Dict
 
 from goals import goal_engine
-from memory_manager import get_memory_manager
+from memory.memory_manager import get_memory_manager
 from reflection.reflection_engine import run_llm_task
 
 

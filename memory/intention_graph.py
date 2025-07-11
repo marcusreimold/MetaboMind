@@ -158,5 +158,43 @@ class IntentionGraph:
         plt.close()
 
 
+    def add_goal_transition(self, previous_goal: str, new_goal: str) -> None:
+        """Add a directed edge from ``previous_goal`` to ``new_goal``.
+
+        Nodes are created if they do not yet exist. Duplicate edges are
+        ignored. The goal graph is persisted after modification.
+        """
+
+        self.goal_graph.add_node(previous_goal)
+        self.goal_graph.add_node(new_goal)
+        if not self.goal_graph.has_edge(previous_goal, new_goal):
+            self.goal_graph.add_edge(previous_goal, new_goal)
+            self._save_goal_graph()
+
+    def get_goal_path(self) -> List[str]:
+        """Return a list representing the current goal path."""
+
+        if len(self.goal_graph) == 0:
+            return []
+        try:
+            return list(nx.topological_sort(self.goal_graph))
+        except nx.NetworkXUnfeasible:
+            start = next(iter(self.goal_graph.nodes()))
+            return list(nx.dfs_preorder_nodes(self.goal_graph, start))
+
+    def visualize_graph(self, output_path: str = "memory/intent_graph.png") -> None:
+        """Create a simple PNG visualization of the goal graph."""
+
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(8, 6))
+        pos = nx.spring_layout(self.goal_graph)
+        nx.draw(self.goal_graph, pos, with_labels=True, arrows=True, node_color="lightblue")
+        plt.tight_layout()
+        plt.savefig(output_path)
+        plt.close()
+
+
+
 
 

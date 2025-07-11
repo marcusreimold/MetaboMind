@@ -5,7 +5,7 @@ from typing import Dict
 
 from goals.goal_manager import GoalManager
 from goals.goal_updater import propose_goal, check_goal_shift
-from memory_manager import get_memory_manager
+from memory.memory_manager import get_memory_manager
 from memory.context_selector import load_context
 from parsing.triplet_parser_llm import extract_triplets_via_llm
 from memory.recall_context import recall_context

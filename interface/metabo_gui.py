@@ -10,8 +10,8 @@ from tkinter.scrolledtext import ScrolledText
 from control.metabo_cycle import run_metabo_cycle
 from control.takt_engine import run_metabotakt
 from goals.goal_manager import get_active_goal, set_goal
-from memory_manager import get_memory_manager
-import llm_client
+from memory.memory_manager import get_memory_manager
+import utils.llm_client as llm_client
 
 
 class MetaboGUI:
@@ -246,7 +246,7 @@ class MetaboGUI:
 
     def _show_graph(self) -> None:
         try:
-            from memory_manager import get_memory_manager
+            from memory.memory_manager import get_memory_manager
             G = get_memory_manager().graph.graph
         except Exception as exc:  # pragma: no cover - visualisation is optional
             self._append_chat(

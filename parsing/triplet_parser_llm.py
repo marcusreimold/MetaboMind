@@ -7,7 +7,7 @@ import os
 import logging
 from typing import List, Tuple
 
-from llm_client import get_client
+from utils.llm_client import get_client
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 # System prompt instructing the model

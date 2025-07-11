@@ -6,7 +6,7 @@ import logging
 import os
 
 from utils.json_utils import parse_json_safe
-from llm_client import get_client
+from utils.llm_client import get_client
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 logger = logging.getLogger(__name__)

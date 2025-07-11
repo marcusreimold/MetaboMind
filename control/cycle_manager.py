@@ -4,7 +4,7 @@ import os
 from typing import List, Tuple, Optional
 
 from goals import goal_engine
-from memory_manager import get_memory_manager
+from memory.memory_manager import get_memory_manager
 
 from logs.logger import MetaboLogger
 

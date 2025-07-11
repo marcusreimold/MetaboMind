@@ -3,9 +3,9 @@ import json
 import logging
 from typing import Dict, List, Tuple, Optional
 
-from llm_client import get_client
+from utils.llm_client import get_client
 from goals import goal_manager
-from memory_manager import get_memory_manager
+from memory.memory_manager import get_memory_manager
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 from control.metabo_rules import METABO_RULES

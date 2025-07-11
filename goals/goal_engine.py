@@ -8,7 +8,7 @@ from typing import List, Tuple
 from goals.goal_manager import GoalManager
 from goals.goal_updater import update_goal as _llm_update_goal
 
-from llm_client import get_client
+from utils.llm_client import get_client
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 logger = logging.getLogger(__name__)
