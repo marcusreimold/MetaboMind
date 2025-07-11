@@ -4,6 +4,8 @@ MetaboMind is a simple goal-oriented reasoning demo. The main entry point is
 `main.py` which launches a small GUI and handles the cycle logic.
 
 Runtime data such as logs or graphs are stored in the `data/` directory.
+The `MemoryManager` also keeps its entropy snapshot under
+`data/last_entropy.txt` by default.
 
 All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
 The Metabo rules are stored in `METABO_PROMPT` and automatically prefixed to
