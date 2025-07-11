@@ -12,6 +12,7 @@ from control.takt_engine import run_metabotakt
 from goals.goal_manager import get_active_goal, set_goal
 from memory.memory_manager import get_memory_manager
 import utils.llm_client as llm_client
+from control.yin_yang_controller import current_mode
 
 
 class MetaboGUI:
@@ -170,6 +171,7 @@ class MetaboGUI:
 
         self._append_chat(f"Du: {user_input}\n", "user")
         result = run_metabo_cycle(user_input)
+        self._append_chat(f"[Modus: {current_mode().upper()}]\n", "system")
         self._append_chat(f"System: {result['reflection']}\n", "system")
         self.chat.see(tk.END)
 

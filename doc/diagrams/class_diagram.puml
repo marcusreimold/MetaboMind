@@ -6,11 +6,14 @@ class MemoryManager
 class IntentionGraph
 class ReflectionEngine
 class TaktEngine
+class YinYangOrchestrator
 Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
 MetaboCycle --> ReflectionEngine
+MetaboCycle --> YinYangOrchestrator
 MemoryManager --> IntentionGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager
+Main --> YinYangOrchestrator
 @enduml
