@@ -59,3 +59,12 @@ def test_fallback(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "x")
     res = subgoal_planner.decompose_goal("Goal")
     assert res == ["Goal"]
+
+
+def test_config_defaults():
+    import inspect
+    from cfg import config
+
+    sig = inspect.signature(subgoal_planner.decompose_goal)
+    assert sig.parameters['model'].default == config.MODELS['subgoal']
+

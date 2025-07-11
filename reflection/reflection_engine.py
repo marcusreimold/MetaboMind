@@ -6,6 +6,7 @@ from typing import Dict, List, Tuple, Optional
 from llm_client import get_client
 from goals import goal_manager
 from memory_manager import get_memory_manager
+from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 from control.metabo_rules import METABO_RULES
 
@@ -23,9 +24,17 @@ def run_llm_task(prompt: str, api_key: str | None = None) -> str:
 
     try:
         if hasattr(client, "chat"):
-            resp = client.chat.completions.create(model="gpt-4o", temperature=0, messages=messages)
+            resp = client.chat.completions.create(
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
+                messages=messages,
+            )
             return resp.choices[0].message.content.strip()
-        resp = client.ChatCompletion.create(model="gpt-4o", temperature=0, messages=messages)
+        resp = client.ChatCompletion.create(
+            model=MODELS['chat'],
+            temperature=TEMPERATURES['chat'],
+            messages=messages,
+        )
         return resp["choices"][0]["message"]["content"].strip()
     except Exception:  # pragma: no cover - network errors
         return ""
@@ -45,11 +54,7 @@ def detect_goal_shift(
 
     previous_user_inputs = previous_user_inputs or []
 
-    system = (
-        "Du bist ein Zielerkennungsmodul im KI-System MetaboMind. "
-        "Analysiere die aktuelle und vorherige Konversation, um zu erkennen, "
-        "ob ein neues Thema vorgeschlagen wird. Gib ein JSON-Objekt zurück."
-    )
+    system = PROMPTS['goal_detector_system']
 
     parts = [f"Aktuelles Ziel: {current_goal}"]
     if previous_user_inputs:
@@ -83,8 +88,8 @@ def detect_goal_shift(
     try:
         if hasattr(client, "chat"):
             resp = client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
                 messages=messages,
                 functions=functions,
                 function_call="auto",
@@ -97,8 +102,8 @@ def detect_goal_shift(
                     return data.get("change_goal", False), data.get("new_goal")
         else:
             resp = client.ChatCompletion.create(
-                model="gpt-4o",
-                temperature=0,
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
                 messages=messages,
                 functions=functions,
                 function_call="auto",
@@ -161,15 +166,7 @@ def generate_reflection(
 
     facts = "; ".join([f"{s} {p} {o}" for s, p, o in triplets or []])
 
-    system_prompt = (
-        METABO_RULES
-        + (
-            "\nDu bist ein Denkagent im KI-System MetaboMind. "
-            "Beziehe dich direkt auf die Nutzereingabe und verfolge dabei das Ziel. "
-            "Nutze die Tripel aus dem Ged\u00e4chtnis und die letzte Reflexion, um den Gedanken weiterzuentwickeln. "
-            "Antworte der Nutzerin oder dem Nutzer in genau einem klaren Satz ohne Floskeln."
-        )
-    )
+    system_prompt = METABO_RULES + "\n" + PROMPTS['reflection_system']
 
     user_content = f"Ziel: {goal}\nEingabe: {last_user_input}"
     if last_reflection.strip():
@@ -184,15 +181,15 @@ def generate_reflection(
 
     if hasattr(client, "chat"):
         response = client.chat.completions.create(
-            model="gpt-4o",
-            temperature=0,
+            model=MODELS['chat'],
+            temperature=TEMPERATURES['chat'],
             messages=messages,
         )
         content = response.choices[0].message.content
     else:
         response = client.ChatCompletion.create(
-            model="gpt-4o",
-            temperature=0,
+            model=MODELS['chat'],
+            temperature=TEMPERATURES['chat'],
             messages=messages,
         )
         content = response["choices"][0]["message"]["content"]

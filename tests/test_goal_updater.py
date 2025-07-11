@@ -48,3 +48,9 @@ def test_proposed_goal_via_llm(monkeypatch):
     monkeypatch.setattr(goal_updater, "get_client", lambda *a, **k: None)
     res = goal_updater.update_goal("hi", "Alt", "", [])
     assert res == "Neu"
+
+
+def test_config_prompt():
+    from cfg import config
+    assert goal_updater._SYSTEM_PROMPT is config.PROMPTS['goal_updater_system']
+

@@ -7,23 +7,19 @@ import os
 
 from utils.json_utils import parse_json_safe
 from llm_client import get_client
+from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 logger = logging.getLogger(__name__)
 
-_SYSTEM_PROMPT = (
-    "Du bist ein Planungsagent in einem KI-System namens MetaboMind. "
-    "Zerlege das folgende Ziel in 2 bis 5 umsetzbare Teilziele. "
-    "Formuliere jedes Teilziel als kurzen Satz im Klartext. "
-    "Gib eine JSON-Liste der Teilziele zur\xFCck."
-)
+_SYSTEM_PROMPT = PROMPTS['subgoal_planner_system']
 
 
 def decompose_goal(
     goal: str,
     context: str = "",
     *,
-    model: str = "gpt-4o-mini",
-    temperature: float = 0.3,
+    model: str = MODELS['subgoal'],
+    temperature: float = TEMPERATURES['subgoal'],
 ) -> List[str]:
     """Return a list of subgoals decomposed from ``goal``."""
     client = get_client(os.getenv("OPENAI_API_KEY"))

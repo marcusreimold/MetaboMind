@@ -8,15 +8,11 @@ import logging
 from typing import List, Tuple
 
 from llm_client import get_client
+from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 # System prompt instructing the model
 
-_SYSTEM_PROMPT = (
-    "Extrahiere aus folgendem deutschen Text alle bedeutungsvollen Aussagen als "
-    "Tripel (Subjekt, Prädikat, Objekt). "
-    "Gib nur eine Liste von Tripeln im Format [('Subjekt', 'Prädikat', 'Objekt')] "
-    "zurück. Kein Kommentar, keine Erklärungen."
-)
+_SYSTEM_PROMPT = PROMPTS['triplet_parser_system']
 logger = logging.getLogger(__name__)
 
 
@@ -87,7 +83,7 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
     return None
 
 
-def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tuple[str, str, str]]:
+def extract_triplets_via_llm(text: str, model: str = MODELS['chat']) -> List[Tuple[str, str, str]]:
     """Extract semantic triples from ``text`` using an OpenAI chat model."""
     client = get_client(os.getenv("OPENAI_API_KEY"))
     if client is None:
@@ -98,7 +94,7 @@ def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tu
         if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model=model,
-                temperature=0,
+                temperature=TEMPERATURES['chat'],
                 messages=[
                     {"role": "system", "content": _SYSTEM_PROMPT},
                     {"role": "user", "content": text},
@@ -107,7 +103,7 @@ def extract_triplets_via_llm(text: str, model: str = "gpt-3.5-turbo") -> List[Tu
         else:
             response = client.ChatCompletion.create(
                 model=model,
-                temperature=0,
+                temperature=TEMPERATURES['chat'],
                 messages=[
                     {"role": "system", "content": _SYSTEM_PROMPT},
                     {"role": "user", "content": text},

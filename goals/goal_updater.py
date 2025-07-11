@@ -9,17 +9,11 @@ from typing import List, Tuple, Optional
 import re
 
 from llm_client import get_client
+from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 logger = logging.getLogger(__name__)
 
-_SYSTEM_PROMPT = (
-    "Du bist ein Ziel-Update-Modul im KI-System MetaboMind. "
-    "Analysiere die Nutzereingabe, das bisherige Ziel, die letzte Reflexion und "
-    "die Tripel aus dem Ged\u00e4chtnis. Erkennst du einen thematischen Fokuswechsel, "
-    "dann formuliere ein neues, klares Ziel im Stil 'Untersuche X'. "
-    "Ist kein deutlicher Wechsel vorhanden, gib exakt das alte Ziel wieder. "
-    "Gib ausschlie\u00dflich das Ziel zur\u00fcck."
-)
+_SYSTEM_PROMPT = PROMPTS['goal_updater_system']
 
 # ---------------------------------------------------------------------------
 # Goal proposal and shift utilities
@@ -31,7 +25,7 @@ def propose_goal(user_input: str, api_key: str | None = None) -> Optional[str]:
         return None
 
     messages = [
-        {"role": "system", "content": "Pr\u00fcfe, ob der Nutzer ein neues Thema vorschl\u00e4gt."},
+        {"role": "system", "content": PROMPTS['propose_goal_system']},
         {"role": "user", "content": user_input},
     ]
     functions = [
@@ -49,8 +43,8 @@ def propose_goal(user_input: str, api_key: str | None = None) -> Optional[str]:
     try:
         if hasattr(client, "chat"):
             resp = client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
                 messages=messages,
                 functions=functions,
                 function_call="auto",
@@ -63,8 +57,8 @@ def propose_goal(user_input: str, api_key: str | None = None) -> Optional[str]:
                     return data.get("goal", "").strip()
         else:
             resp = client.ChatCompletion.create(
-                model="gpt-4o",
-                temperature=0,
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
                 messages=messages,
                 functions=functions,
                 function_call="auto",
@@ -96,14 +90,14 @@ def check_goal_shift(current_goal: str, proposed_goal: str, api_key: str | None 
         try:
             if hasattr(client, "embeddings"):
                 resp = client.embeddings.create(
-                    model="text-embedding-ada-002",
+                    model=MODELS['embedding'],
                     input=[current_goal, proposed_goal],
                 )
                 vec1 = resp.data[0].embedding
                 vec2 = resp.data[1].embedding
             else:
                 resp = client.Embedding.create(
-                    model="text-embedding-ada-002",
+                    model=MODELS['embedding'],
                     input=[current_goal, proposed_goal],
                 )
                 vec1 = resp["data"][0]["embedding"]
@@ -184,15 +178,15 @@ def update_goal(
     try:
         if hasattr(client, "chat"):
             response = client.chat.completions.create(
-                model="gpt-4o",
-                temperature=0,
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
                 messages=messages,
             )
             text = response.choices[0].message.content
         else:
             response = client.ChatCompletion.create(
-                model="gpt-4o",
-                temperature=0,
+                model=MODELS['chat'],
+                temperature=TEMPERATURES['chat'],
                 messages=messages,
             )
             text = response["choices"][0]["message"]["content"]

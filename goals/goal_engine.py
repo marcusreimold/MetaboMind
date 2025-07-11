@@ -9,26 +9,20 @@ from goals.goal_manager import GoalManager
 from goals.goal_updater import update_goal as _llm_update_goal
 
 from llm_client import get_client
+from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 logger = logging.getLogger(__name__)
 
 _GOAL_MGR = GoalManager()
 
-_SYSTEM_PROMPT = (
-    "Du bist ein Denkagent in einem KI-System namens MetaboMind. "
-    "Deine Aufgabe ist es, eine kurze, neue Aussage zu formulieren, "
-    "die das folgende Ziel inhaltlich weiterverfolgt. Nutze dazu auch "
-    "die letzte Reflexion, wenn vorhanden. Formuliere die Aussage in "
-    "natürlicher Sprache, als würdest du einen neuen Gedanken entwickeln. "
-    "Gib nur den einen Satz zurück – keine Erklärung, keine Wiederholung des Ziels."
-)
+_SYSTEM_PROMPT = PROMPTS['goal_engine_system']
 
 
 def generate_next_input(
     goal: str,
     previous_reflection: str = "",
-    model: str = "gpt-3.5-turbo",
-    temperature: float = 0.7,
+    model: str = MODELS['chat'],
+    temperature: float = TEMPERATURES['generate_next_input'],
 ) -> str:
     """Generate a short statement that pursues ``goal`` further."""
     client = get_client(os.getenv("OPENAI_API_KEY"))
