@@ -11,6 +11,7 @@ from logs.logger import MetaboLogger
 from parsing.triplet_parser_llm import extract_triplets_via_llm
 
 from reflection.reflection_engine import generate_reflection, run_llm_task
+from cfg.config import PROMPTS
 
 
 class CycleManager:
@@ -73,7 +74,9 @@ class CycleManager:
                 self.memory.graph.goal_graph.add_node(new_goal)
                 self.memory.graph._save_goal_graph()
             goal_reflection = run_llm_task(
-                f"Reflektiere kurz den Zielwechsel von '{self.current_goal}' zu '{new_goal}'.",
+                PROMPTS['goal_shift_reflection'].format(
+                    old=self.current_goal, new=new_goal
+                ),
                 api_key=self.api_key,
             )
             if goal_reflection:

@@ -15,6 +15,7 @@ from reasoning.emotion import interpret_emotion
 from reasoning.entropy_analyzer import entropy_of_graph
 from goals.subgoal_planner import decompose_goal
 from goals.subgoal_executor import execute_first_subgoal
+from control.yin_yang_controller import decide_mode, current_mode
 from difflib import SequenceMatcher
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,12 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     goal_mgr = GoalManager()
     memory = get_memory_manager()
     log = MetaboLogger()
+
+    ent_before_cycle = memory.load_last_entropy()
+    current_ent = entropy_of_graph(memory.graph.snapshot())
+    delta_initial = current_ent - ent_before_cycle
+    mode = decide_mode({"entropy_delta": delta_initial}, user_input)
+    logger.info("MetaboMind mode: %s", mode)
 
     goal = goal_mgr.get_goal()
     last_reflection = goal_mgr.load_reflection()
@@ -67,42 +74,48 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         logger.warning("context selection failed: %s", exc)
         context_nodes = []
 
-    try:
-        mem_facts = recall_context(scope="goal", limit=5)
-        fact_triplets = [
-            (d["subject"], d["predicate"], d["object"]) for d in mem_facts
-        ]
-    except Exception as exc:
-        logger.warning("context recall failed: %s", exc)
-        fact_triplets = []
-
-    try:
-        reflection_data = generate_reflection(
-            last_user_input=user_input,
-            goal=goal,
-            last_reflection=last_reflection,
-            triplets=fact_triplets,
-        )
-        reflection_text = reflection_data.get("reflection", "")
-    except Exception as exc:
-        logger.warning("reflection generation failed: %s", exc)
-        reflection_text = ""
-        reflection_data = {"reflection": "", "triplets": [], "explanation": ""}
-
-    try:
-        triplets = extract_triplets_via_llm(reflection_text)
-    except Exception as exc:
-        logger.warning("triplet extraction failed: %s", exc)
-        triplets = []
-
-    if triplets:
+    if mode == "yang":
         try:
-            memory.graph.add_triplets(triplets)
+            mem_facts = recall_context(scope="goal", limit=5)
+            fact_triplets = [
+                (d["subject"], d["predicate"], d["object"]) for d in mem_facts
+            ]
         except Exception as exc:
-            logger.warning("graph update failed: %s", exc)
+            logger.warning("context recall failed: %s", exc)
+            fact_triplets = []
 
-    entropy_after = entropy_of_graph(memory.graph.snapshot())
-    emotion = interpret_emotion(entropy_before, entropy_after)
+        try:
+            reflection_data = generate_reflection(
+                last_user_input=user_input,
+                goal=goal,
+                last_reflection=last_reflection,
+                triplets=fact_triplets,
+            )
+            reflection_text = reflection_data.get("reflection", "")
+        except Exception as exc:
+            logger.warning("reflection generation failed: %s", exc)
+            reflection_text = ""
+            reflection_data = {"reflection": "", "triplets": [], "explanation": ""}
+
+        try:
+            triplets = extract_triplets_via_llm(reflection_text)
+        except Exception as exc:
+            logger.warning("triplet extraction failed: %s", exc)
+            triplets = []
+
+        if triplets:
+            try:
+                memory.graph.add_triplets(triplets)
+            except Exception as exc:
+                logger.warning("graph update failed: %s", exc)
+
+        entropy_after = entropy_of_graph(memory.graph.snapshot())
+        emotion = interpret_emotion(entropy_before, entropy_after)
+    else:
+        reflection_text = last_reflection
+        triplets = []
+        entropy_after = current_ent
+        emotion = interpret_emotion(ent_before_cycle, entropy_after)
 
 
 
@@ -120,6 +133,10 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         logger.warning("logging failed: %s", exc)
 
     goal_mgr.save_reflection(reflection_text)
+    try:
+        memory.store_last_entropy(entropy_after)
+    except Exception as exc:
+        logger.warning("storing entropy failed: %s", exc)
 
     return {
         "goal": goal,
@@ -132,4 +149,5 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         "entropy_after": entropy_after,
         "emotion": emotion["emotion"],
         "delta": emotion["delta"],
+        "mode": mode,
     }

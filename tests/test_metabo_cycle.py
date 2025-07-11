@@ -21,7 +21,18 @@ def setup(monkeypatch, tmp_path, goal=""):
         def _save_goal_graph(self):
             pass
 
-    mem = types.SimpleNamespace(graph=DummyGraph())
+    class DummyMem:
+        def __init__(self):
+            self.graph = DummyGraph()
+            self.ent = 0.0
+
+        def load_last_entropy(self):
+            return self.ent
+
+        def store_last_entropy(self, val):
+            self.ent = val
+
+    mem = DummyMem()
     monkeypatch.setattr(metabo_cycle, "get_memory_manager", lambda: mem)
     monkeypatch.setattr(metabo_cycle, "MetaboLogger", lambda *a, **k: types.SimpleNamespace(log_cycle=lambda **kw: None))
     monkeypatch.setattr(metabo_cycle, "decompose_goal", lambda g, r: [g])

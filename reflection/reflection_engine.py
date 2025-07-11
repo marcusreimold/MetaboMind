@@ -8,8 +8,6 @@ from goals import goal_manager
 from memory.memory_manager import get_memory_manager
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
-from control.metabo_rules import METABO_RULES
-
 
 logger = logging.getLogger(__name__)
 
@@ -159,14 +157,14 @@ def generate_reflection(
             memory.graph._save_goal_graph()
         goal_manager.set_goal(proposed)
         goal_update_msg = run_llm_task(
-            f"Reflektiere kurz den Zielwechsel von '{goal}' zu '{proposed}'.",
+            PROMPTS['goal_shift_reflection'].format(old=goal, new=proposed),
             api_key=api_key,
         )
         goal = proposed
 
     facts = "; ".join([f"{s} {p} {o}" for s, p, o in triplets or []])
 
-    system_prompt = METABO_RULES + "\n" + PROMPTS['reflection_system']
+    system_prompt = PROMPTS['reflection_system']
 
     user_content = f"Ziel: {goal}\nEingabe: {last_user_input}"
     if last_reflection.strip():
