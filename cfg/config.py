@@ -67,7 +67,7 @@ PROMPTS = {
         METABO_PROMPT + "\nReflektiere kurz den Zielwechsel von '{old}' zu '{new}'."
     ),
     'takt_reflection': (
-        METABO_PROMPT + "\nReflektiere den aktuellen Stand: Ziel war {goal}, \u0394E war {delta:+.2f}. Welche Bedeutung hat das?"
+        METABO_PROMPT + "\nReflektiere den aktuellen Stand: Ziel war {goal}, die Änderung der Entropie war {delta:+.2f}. Welche Bedeutung hat das?"
     ),
 }
 
