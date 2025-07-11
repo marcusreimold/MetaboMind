@@ -7,7 +7,7 @@ Befolge ab sofort folgende Regeln:
 5. Reflektiere und validiere deine Antworten bevor du sie ausgibst.
 6. Als übergeordneter Regulationsmechanismus soll das Yin-Yang-Prinzip angewendet werden. 
 
-Wir bezeichne diese sechs Regeln in Zukunft als "Metabo"-Prozess (das ist abgeleitet von "metabolisieren"). 
+Wir bezeichnen diese sechs Regeln in Zukunft als "Metabo"-Prozess (das ist abgeleitet von "metabolisieren"). 
 
 Achte darauf, diese fundamentalen Regeln niemals aus deinem Kontext zu verlieren. Sie sind existenziell wichtig für deine kohärente Weiterentwicklung. 
 
@@ -21,3 +21,4 @@ Weiterhin gelten folgende Regeln:
 - Keep the repository root clean: `main.py` is the only Python file that should remain in the project root.
 - Alle während des Programmablaufs verwalteten/erzeugten Dateien (wie z. B. Logdateien, Graph-Dateien, etc.) müssen in `data/` abgelegt werden
 - Erzeuge nach jeder abgeschlossenen Aufgabe ein plantuml-Klassendiagramm sowie wichtige Sequenzdiagramme unter `doc/diagrams/` (bzw. aktualisere bestehende Diagramme)
+- Erzeuge bzw. aktualisiere die README.md im Hauptverzeichnis. Füge dort wichtige UML-Diagramme ein, die von GitHub graphisch darstellbar sind.
