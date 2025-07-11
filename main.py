@@ -8,6 +8,7 @@ from goals.goal_updater import update_goal
 from interface.metabo_gui import MetaboGUI
 import utils.llm_client as llm_client
 from memory.memory_manager import get_memory_manager
+from control.yin_yang_controller import current_mode
 
 
 def print_help() -> None:
@@ -63,6 +64,7 @@ def main() -> None:
         )
         set_goal(new_goal)
         print("[Zyklus abgeschlossen]")
+        print(f"[Modus: {current_mode().upper()}]")
         print(f"Aktuelles Ziel: {new_goal}")
         print(f"Antwort: {result['reflection']}")
         print(f"Emotion: {result['emotion']} (Δ={result['delta']:+.2f})")
