@@ -6,7 +6,11 @@ from pathlib import Path
 class GoalManager:
     """Simple file-based goal management."""
 
-    def __init__(self, path: str = "data/goals/current_goal.txt", reflection_path: str = "data/goals/last_reflection.txt") -> None:
+    def __init__(
+        self,
+        path: str = "memory/goal.txt",
+        reflection_path: str = "memory/last_reflection.txt",
+    ) -> None:
         self.goal_path = Path(path)
         self.goal_path.parent.mkdir(parents=True, exist_ok=True)
         self.reflection_path = Path(reflection_path)
