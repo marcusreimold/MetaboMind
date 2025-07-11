@@ -14,15 +14,12 @@ except ImportError:  # pragma: no cover - optional dependency
 
 from goals.goal_manager import GoalManager
 from memory.intention_graph import IntentionGraph
+from cfg.config import PROMPTS
 
 logger = logging.getLogger(__name__)
 
 
-_SYSTEM_PROMPT = (
-    "Du bist ein Modul im KI-System MetaboMind. "
-    "Pr\u00fcfe anhand der Nutzereingabe, ob ein neues Thema verfolgt werden soll. "
-    "Nutze die Funktion 'propose_goal', wenn ein klares neues Ziel erkennbar ist." 
-)
+_SYSTEM_PROMPT = PROMPTS['goal_selector_system']
 
 
 def _build_client(api_key: str | None):

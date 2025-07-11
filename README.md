@@ -5,6 +5,10 @@ MetaboMind is a simple goal-oriented reasoning demo. The main entry point is
 
 Runtime data such as logs or graphs are stored in the `data/` directory.
 
+All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
+The Metabo rules are stored in `METABO_PROMPT` and automatically prefixed to
+each system prompt.
+
 ## Diagrams
 
 ### Class overview

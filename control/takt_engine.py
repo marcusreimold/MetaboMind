@@ -5,6 +5,7 @@ from typing import Dict
 from goals import goal_engine
 from memory.memory_manager import get_memory_manager
 from reflection.reflection_engine import run_llm_task
+from cfg.config import PROMPTS
 
 
 def run_metabotakt(api_key: str | None = None) -> Dict[str, object]:
@@ -19,10 +20,7 @@ def run_metabotakt(api_key: str | None = None) -> Dict[str, object]:
 
     emotion = memory.map_entropy_to_emotion(delta)
 
-    prompt = (
-        f"Reflektiere den aktuellen Stand: Ziel war {current_goal}, "
-        f"\u0394E war {delta:+.2f}. Welche Bedeutung hat das?"
-    )
+    prompt = PROMPTS['takt_reflection'].format(goal=current_goal, delta=delta)
     reflection = run_llm_task(prompt, api_key=api_key)
     if reflection:
         memory.store_reflection(reflection)
