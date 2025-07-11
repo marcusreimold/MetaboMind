@@ -1,0 +1,16 @@
+@startuml
+class Main
+class MetaboCycle
+class GoalManager
+class MemoryManager
+class IntentionGraph
+class ReflectionEngine
+class TaktEngine
+Main --> MetaboCycle
+MetaboCycle --> GoalManager
+MetaboCycle --> MemoryManager
+MetaboCycle --> ReflectionEngine
+MemoryManager --> IntentionGraph
+TaktEngine --> MemoryManager
+TaktEngine --> GoalManager
+@enduml
