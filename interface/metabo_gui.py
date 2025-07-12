@@ -134,7 +134,7 @@ class MetaboGUI:
 
         from interface.graph_viewer import GraphViewer
 
-        self.graph_viewer = GraphViewer(frame, self.memory.graph.graph)
+        self.graph_viewer = GraphViewer(frame, self.memory.metabo_graph.graph)
         self.graph_viewer.pack(fill=tk.BOTH, expand=True)
         self._update_graph_view()
 
@@ -278,7 +278,7 @@ class MetaboGUI:
 
     def _update_graph_view(self) -> None:
         try:
-            self.graph_viewer.graph = self.memory.graph.graph
+            self.graph_viewer.graph = self.memory.metabo_graph.graph
             self.graph_viewer.draw()
         except Exception as exc:  # pragma: no cover - visualisation is optional
             self._append_chat(
@@ -290,6 +290,7 @@ class MetaboGUI:
         """Persist the knowledge graph and notify the user."""
         try:
             self.memory.graph.save_graph()
+            self.memory.metabo_graph.save()
             self._append_chat("[Graph gespeichert]\n", "system")
         except Exception as exc:  # pragma: no cover - error handling
             self._append_chat(f"[Fehler beim Speichern: {exc}]\n", "system")

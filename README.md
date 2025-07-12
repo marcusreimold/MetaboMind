@@ -38,6 +38,7 @@ The "Wissensgraph" tab visualises the knowledge graph with zoomable nodes and
 edges, including tooltips for quick inspection. The graph can be panned by
 dragging with the left mouse button, zoomed via the mouse wheel and it updates
 automatically whenever new triplets are recorded.
+It displays the consolidated `MetaboGraph` loaded from `data/metabograph.gml`.
 The module `graph_entropy_scorer` analyses the semantic order of this graph and
 provides a normalized entropy score with textual explanation.
 
@@ -53,7 +54,7 @@ entropy.
 
 ### Class overview
 
-![Class Diagram](https://www.plantuml.com/plantuml/png/XLDDJyCm3BtlL_JOYV47E721QPh4XCINj5FafQQBQ9qgSTdAhoTfrv6ctRXPVi_ni_Ci2x0ssO2YcUn2PDZfXqOMUCgiD1GR8CZHd3cbDiqmjoP6OgLfPQ3Qdv8l-5cWzDabvOhw5z_WYmU9hQ8jKFviv1uj6s1zRgKpV4Ifig2v5xXwN_VoVByFXOSpeyqiYOskcbUfZGC2KdANt6G63kaypWfDuaVhSXfnDRcm38QluAN-nXuUAF0i2OMi2s0Ks45fxdcNw7Yi2lSlCNbYL-r8xPASW0pJ4jaeQHS9uv4NYQrt8jE4LsftTIugeyZFDaqIUsLTrBZmoKMNdX9I4plLLjGaqVYGczJhcC-2lmmKDsx4nhtKIUyKdmPm9Qu-kRsz7zWoY5iiD6YC3QqQeoD_neGfOuvQ11OTj6lHw2x-h3yXBm87S_MBkAp8dKIyAhVcsg9DU6yGieWNTBj62-zhFDu_jpRUm2y0)
+![Class Diagram](https://www.plantuml.com/plantuml/png/VLJ1Rjim3BtlAtnqiUO7UjXbBO822rQisu2U14PcRM6oQ4ZqMk_hHzbnAijEBZR1zoW-YYArXH2A0nZtIKycCXpfww0jdZnx0di01pNwCwSbFonzZuxHiI6tzz0r9-SFVBMee_V1rSRD9_w4Fxnml1Zt0gx-xdM3WJqmdLDHXVUeJPKaZmBtlnvdUJ7VRuDlPyReUN3igHkUDVayT1IOX1LtnUVAmrjvatiLEVMFgDr69APMWS7p5RoblpZ32qsHfS7gtWAZmWagwyYxHCVtpagdSd9ILcH1LQaHkOApDvr53kLih5XhQIjASD25XdW3WR7efNUdB46ruMxHrwYSTBgCdzk2X-ws2DHxZJdxrLZiWAFv9ByChK__Gs_Pt9kfqnkFQ-pu-AgaFvAsHRa77IGplhEaxe-g8YV9ByOU-rfrthXO_3P9DIQ8DOZvJQnBHobDZgMfGVLEeuyc3sNK8QL_FFv4yI0lO92J9kcJubC14YBnnMxtPJ77YJrYwKJds7AsStGrq3bXQv9NAPAPNgGRqMoHh0df57ziaWtn6RYeUhwcotfbm-GNAKte0uQ26uzGPRmaspLQkgxMjMsihdInPEN_1m00)
 
 ### Cycle sequence
 
