@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timedelta
 from typing import Dict, List
+
+from textblob import TextBlob
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,7 @@ class YinYangOrchestrator:
         self._mode = "yang"
         self._override: str | None = None
         self._deltas: List[float] = []
+        self._history: List[str] = []
         self._heartbeat = heartbeat or 0
         self._next_beat = (
             datetime.utcnow() + timedelta(seconds=self._heartbeat)
@@ -34,8 +38,14 @@ class YinYangOrchestrator:
             self._override = self._mode
             logger.info("Mode manually set to %s", self._mode)
 
-    def decide_mode(self, context_metrics: Dict[str, float], user_input: str) -> str:
-        """Return 'yin' or 'yang' according to entropy trend and hints."""
+    def decide_mode(
+        self,
+        context_metrics: Dict[str, float],
+        user_input: str,
+        subgoal_count: int = 0,
+    ) -> str:
+        """Return ``'yin'`` or ``'yang'`` based on multiple indicators."""
+
         if self._override:
             return self._override
 
@@ -44,23 +54,81 @@ class YinYangOrchestrator:
         if len(self._deltas) > 5:
             self._deltas.pop(0)
         trend = sum(self._deltas) / len(self._deltas)
+        emotion = context_metrics.get("emotion", "")
 
         text = user_input.lower()
 
+        # ----------------------------------
+        # indicator collection
+        yin_votes = 0
+
+        # negative or uncertain sentiment
+        try:
+            polarity = TextBlob(text).sentiment.polarity
+        except Exception:  # pragma: no cover - sentiment failed
+            polarity = 0.0
+        if polarity < -0.1:
+            yin_votes += 1
+
+        # explicit emotion metric
+        if isinstance(emotion, str) and emotion.lower() in {"negative", "unsicher"}:
+            yin_votes += 1
+
+        # vague or reflective phrases
+        vague_patterns = [
+            r"ich wei[ßs]? nicht",
+            r"keine ahnung",
+            r"was vorher",
+            r"\büberfordert\b",
+            r"wovon sprichst du",
+            r"ich verstehe nicht",
+            r"was meinst du",
+            r"\bhä\b",
+            r"unklar",
+            r"chaotisch",
+            r"verwirrt",
+            r"ich bin durcheinander",
+        ]
+        if any(re.search(p, text) for p in vague_patterns):
+            yin_votes += 1
+
+        # entropy trend
+        if trend > 0.1:
+            yin_votes += 1
+
+        # negative or very small delta
+        if delta < 0 or abs(delta) < 0.01:
+            yin_votes += 1
+
+        # few completed subgoals
+        if subgoal_count < 2:
+            yin_votes += 1
+
+        # cumulative yin tendency
+        if len(self._history) >= 3 and len(set(self._history[-3:])) == 1:
+            yin_votes += 1
+
+        # ----------------------------------
         if "/takt" in text or "denk" in text or "reflekt" in text:
-            self._mode = "yin"
+            mode = "yin"
         elif "aktion" in text or "mach" in text or "tu was" in text:
-            self._mode = "yang"
+            mode = "yang"
         else:
-            if trend > 0.1:
-                self._mode = "yin"
-            elif trend < -0.1:
-                self._mode = "yang"
+            mode = "yin" if yin_votes > 2 else "yang"
 
         if self._heartbeat and self._next_beat and datetime.utcnow() >= self._next_beat:
             self._next_beat = datetime.utcnow() + timedelta(seconds=self._heartbeat)
-            self._mode = "yin" if self._mode == "yang" else "yang"
-            logger.info("Heartbeat toggled mode to %s", self._mode)
+            mode = "yin" if mode == "yang" else "yang"
+            logger.info("Heartbeat toggled mode to %s", mode)
+
+        print(
+            f"[Modus-Entscheidung] Grund: emotion={emotion}, delta={delta:.2f} → {mode.upper()}"
+        )
+
+        self._mode = mode
+        self._history.append(mode)
+        if len(self._history) > 5:
+            self._history.pop(0)
 
         return self._mode
 
@@ -68,8 +136,10 @@ class YinYangOrchestrator:
 # Shared orchestrator ---------------------------------------------------
 _ORCHESTRATOR = YinYangOrchestrator()
 
-def decide_mode(context_metrics: Dict[str, float], user_input: str) -> str:
-    return _ORCHESTRATOR.decide_mode(context_metrics, user_input)
+def decide_mode(
+    context_metrics: Dict[str, float], user_input: str, subgoal_count: int = 0
+) -> str:
+    return _ORCHESTRATOR.decide_mode(context_metrics, user_input, subgoal_count)
 
 def current_mode() -> str:
     return _ORCHESTRATOR.mode

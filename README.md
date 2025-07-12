@@ -11,12 +11,18 @@ All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
 The Metabo rules are stored in `METABO_PROMPT` and automatically prefixed to
 each system prompt.
 
+The controller now decides between Yin and Yang using sentiment analysis,
+vague language detection, subgoal progress and the user's emotional state in
+addition to the entropy trend. If uncertainty is detected, a small debug message
+prints the reason for the selected mode.
+
 ## Diagrams
 
 ### Class overview
 
-![Class Diagram](https://www.plantuml.com/plantuml/png/RP512i8m44NtFKKlq2j8GQIuA8AuwNACOnfC9pAPBdfxQMaqYTaD_tzctcTQBy0oJxPI5holUp0KHXIuk-EYBEvAvy3sGA2Hlvd9yP9gPn8aCOuwXlUuYrTyMbIhUY9jA6oymKiIOJ0q0EaBgn6zC8ZZQcMgc-QG44NpviLikPTIvkuVMXueCiKhjrHM-zUiW92P2NieMxhQ8ZtMNtq0)
+![Class Diagram](https://www.plantuml.com/plantuml/png/dZLBqsIwEEX3_YosFfUH3kIEeYigPBA3rso0GdtgOpHJFOzf24pVk1d3l3tvJpNDVkGApaldph2EoPZgaZAoUPh1qx0-nY0HtweCEvnVqT23sbclQRLracNwrZ7mAc8Ode_-UmlpmHiEi0TGydIJqPxjXWEQBvGcjXjqR80Mamswr73BSY3CVoe5ErzJXIWmyI0nnH4_WzRlfmVLMvlWyisbOtV2cteprEejFotlBOZDP7JPRGkWw0rTf4TSwhiaaOSjldB_Ax5ZIQmj3YfHjt26QjL9l7kD)
 
 ### Cycle sequence
 
-![Sequence Diagram](https://www.plantuml.com/plantuml/png/XP8nQyCm48Lt_OeZKpgqFq1329JIoHGA7JA9gtHr1F99IETI__j87j8uDcGJttjwUdVeM0IpZ4DGQ2Lc-2gKLQh8Mv-G1NO3Udv9qmwmG5VF2xKZmU_uEjb02_uUCNJ8sD-bTJJ4F6qfd_GJo8gF_CQzvsNSoVC9kV_8zan5CjQcgZM5vyFSIOFdD0e8_ObgO1R-ksd88vjX1iOsic_M9tNZQLSstj7Wo7f7PeYEzgiRDuDgw4bCNy7QjfXRGs5CvHnbRRnVGmjbgat8vAlqC1-TCv9z2YJbSHdy9LFHLl9rlvdA64GTYLtxB1S0)
+![Sequence Diagram](https://www.plantuml.com/plantuml/png/hZJBawMhEIXv_oohp82h_QF7KIFSeloKgR5ykolOjeCOorOl---rOaTZZGlu8t7z8zm6K4JZpjEoNBIzfBbKKlXJG5-QBTYjen5O8wawwFDXC3cgwWN8nU2ghf4eMQzI6G5oA40xz2vOnr4CGfGR39h5XuIOng_I7iObExXJWJuq1hSeXs6devCcJgGhH1FNOBt_3XrIE-vxLGjTlK5Ft-oq07asnNODJeMt6TFa6ioie1O2aiX5D-A4OZ2yZ-nujryaVA-ORLsq3McWg-uhMKZyiiu82zk2KFNtQjpfrId8tFbXm6ZAUh6XwW_SVVojXx4oU5mCqB2xbb_tFw==)
+

@@ -8,7 +8,8 @@ participant ReflectionEngine
 participant YinYangOrchestrator
 User -> Main: input text
 Main -> MetaboCycle: run_metabo_cycle(text)
-MetaboCycle -> YinYangOrchestrator: decide_mode()
+MetaboCycle -> YinYangOrchestrator: decide_mode(metrics)
+YinYangOrchestrator -> YinYangOrchestrator: debug_print()
 MetaboCycle -> GoalManager: get_goal()
 MetaboCycle -> MemoryManager: snapshot()
 MetaboCycle -> ReflectionEngine: generate_reflection()
