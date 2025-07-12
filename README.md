@@ -27,7 +27,10 @@ Yin and Yang are primarily selected by an LLM via the function
 `decide_yin_yang_mode(user_input, metrics)`.  The metrics include the current
 entropy delta and a rough emotion estimate.  The orchestrator keeps a simple
 heuristic fallback.  Intermediate metrics and debug output are displayed in the
-GUI tabs while the chat only shows the user text and the final LLM answer.
+GUI tabs while the chat only shows the user text and the final LLM answer.  In
+addition, the orchestrator increases Yin votes whenever typical German phrases
+expressing confusion (e.g. "ich verstehe nicht", "gar nichts mehr", "bin
+verwirrt") are detected.
 The "Wissensgraph" tab visualises the knowledge graph with zoomable nodes and
 edges, including tooltips for quick inspection. The graph can be panned by
 dragging with the left mouse button, zoomed via the mouse wheel and it updates
@@ -37,7 +40,7 @@ automatically whenever new triplets are recorded.
 
 ### Class overview
 
-![Class Diagram](https://www.plantuml.com/plantuml/png/VLD1QiCm4Bpx5JecDFb03oNG5XD8A9Isa9DPorjRr5u5QKthtrTsx5HIxDw6tT7EQ4VQMGR3RLCdiWPhnH4KJH0PSltOoHh7IggXFW91YURAQRJfmjgU68cLfjJ0kHgBh_XPe-ohprGgcYQ-mHS7XPEY4r3vOcI5bWsmlahf0fzGgi8Jxmscx_l9Ng_teV3RCMRcY7jnLmm3iiRDMZN8Hacx4Om_l16spRD24wwNp-PjcPsD8bujaR9AMOSw1myE9PvfJxvJb7NkyCN7HNvqiqxw1CHs-n3ityD3pqyYxeMPnDsR86B2N08t4buMWTpGZHx0NyOpzg9cSAzf4SkENFRngjoQMujMS6KGYeZdgVr7yn-IX-SkjqCg-j_p2m00)
+![Class Diagram](https://www.plantuml.com/plantuml/png/VLHDJyCm3BtlL-J69ZQuSq2J04sJc90GGzefyXAlZMYTaRXivTUJTX-aNRlRav_jz-8-TUeP71TvDhYvln7BhGP6BM33w0HeRIWH3hyBup17Od_7Unwe3BmN2p1qWiYmja-bol1OcLd85a2Ge3ltvDQLpTgSE2mrbcOEjkcn-8wR35LLVQ74q6dZ1tnnex0oj09AtfnAqRC3jcSfg_4PbT6HU6LmjfoVx5LwdmPteIF2ua7SQWUxuQXTbPRahxLvDnDc4baVyWgVsnyCT8VjMhRs6veq3dDaPvGV2yOzZuKlrb9RmYkpwoAHMsU8UmLaQdn0PO2l0VMjaieIXm_hPK4ANGMv75O-HeFeh97Zqf0imwQ3zOFZumF2I9WNaybZ8o4HhhauAsskcPesUn6LTaDNHYuaehGqv6gs5T7_57ROQv6DTvqEqUyefBDzgd3cmgCNd3e4tUgBrAwrzKMzut5J95tz2Vu0)
 
 ### Cycle sequence
 

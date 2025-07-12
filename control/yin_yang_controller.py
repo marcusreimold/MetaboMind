@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 class YinYangOrchestrator:
     """Manage Yin/Yang mode switching based on context metrics."""
 
+    UNCERTAINTY_PATTERNS = [
+        re.compile(r"ich verstehe nicht", re.IGNORECASE),
+        re.compile(r"gar nichts mehr", re.IGNORECASE),
+        re.compile(r"bin verwirrt", re.IGNORECASE),
+    ]
+
     def __init__(self, heartbeat: int | None = None) -> None:
         self._mode = "yang"
         self._override: str | None = None
@@ -27,6 +33,13 @@ class YinYangOrchestrator:
 
     # ------------------------------------------------------------------
     # Mode helpers
+    def _contains_uncertainty(self, text: str) -> bool:
+        """Return True if the text contains predefined uncertainty phrases."""
+        for pattern in self.UNCERTAINTY_PATTERNS:
+            if pattern.search(text):
+                return True
+        return False
+
     @property
     def mode(self) -> str:
         return self._mode
@@ -61,6 +74,9 @@ class YinYangOrchestrator:
         # ----------------------------------
         # indicator collection
         yin_votes = 0
+
+        if self._contains_uncertainty(text):
+            yin_votes += 1
 
         # negative or uncertain sentiment
         try:
