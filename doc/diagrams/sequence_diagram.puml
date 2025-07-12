@@ -1,18 +1,24 @@
 @startuml
 actor User
-participant "main.py" as Main
+participant MetaboGUI
 participant MetaboCycle
 participant GoalManager
 participant MemoryManager
 participant ReflectionEngine
 participant YinYangOrchestrator
-User -> Main: input text
-Main -> MetaboCycle: run_metabo_cycle(text)
-MetaboCycle -> YinYangOrchestrator: decide_mode()
+participant ModeDecider
+participant GraphViewer
+User -> MetaboGUI: input text
+MetaboGUI -> MetaboCycle: run_metabo_cycle(text) ##thread##
+MetaboCycle -> ModeDecider: decide_yin_yang_mode()
+ModeDecider --> MetaboCycle: mode
+MetaboCycle -> YinYangOrchestrator: decide_mode(metrics)
+YinYangOrchestrator -> YinYangOrchestrator: debug_print()
 MetaboCycle -> GoalManager: get_goal()
 MetaboCycle -> MemoryManager: snapshot()
 MetaboCycle -> ReflectionEngine: generate_reflection()
 MetaboCycle -> MemoryManager: add_triplets()
 MetaboCycle -> MemoryManager: save_emotion()
-MetaboCycle --> Main: result
+MetaboCycle --> MetaboGUI: result
+MetaboGUI -> GraphViewer: draw
 @enduml

@@ -1,5 +1,4 @@
 import os
-import os
 import sys
 import types
 import networkx as nx
@@ -20,6 +19,8 @@ def setup(monkeypatch, tmp_path, goal=""):
             self.goal_graph.add_edge(a, b)
         def _save_goal_graph(self):
             pass
+        def get_goal_path(self):
+            return list(self.goal_graph.nodes())
 
     class DummyMem:
         def __init__(self):
@@ -58,4 +59,12 @@ def test_goal_switch(monkeypatch, tmp_path):
     monkeypatch.setattr(metabo_cycle, "check_goal_shift", lambda a, b: True)
     res = metabo_cycle.run_metabo_cycle("User input")
     assert res["goal"] == "Neu"
+
+
+def test_llm_mode_override(monkeypatch, tmp_path):
+    setup(monkeypatch, tmp_path)
+    monkeypatch.setattr(metabo_cycle, "decide_yin_yang_mode", lambda *a, **k: {"mode": "yin", "rationale": "test"})
+    monkeypatch.setattr(metabo_cycle, "decide_mode", lambda *a, **k: "yang")
+    res = metabo_cycle.run_metabo_cycle("Hallo")
+    assert res["mode"] == "yin"
 
