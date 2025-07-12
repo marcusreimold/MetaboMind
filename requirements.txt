@@ -1,0 +1,7 @@
+networkx
+scikit-learn
+textblob
+numpy
+matplotlib
+openai
+pytest
