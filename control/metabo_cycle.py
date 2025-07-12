@@ -16,6 +16,7 @@ from reasoning.entropy_analyzer import entropy_of_graph
 from goals.subgoal_planner import decompose_goal
 from goals.subgoal_executor import execute_first_subgoal
 from control.yin_yang_controller import decide_mode, current_mode
+from control.mode_decider import decide_yin_yang_mode
 from difflib import SequenceMatcher
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     ent_before_cycle = memory.load_last_entropy()
     current_ent = entropy_of_graph(memory.graph.snapshot())
     delta_initial = current_ent - ent_before_cycle
+    initial_emotion = interpret_emotion(ent_before_cycle, current_ent)
 
     try:
         path = memory.graph.get_goal_path()
@@ -45,7 +47,12 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     except Exception:
         sub_done = 0
 
-    mode = decide_mode({"entropy_delta": delta_initial}, user_input, sub_done)
+    metrics = {"entropy_delta": delta_initial, "emotion": initial_emotion["emotion"]}
+    mode = decide_mode(metrics, user_input, sub_done)
+    llm_result = decide_yin_yang_mode(user_input, metrics)
+    if llm_result and llm_result.get("mode") in {"yin", "yang"}:
+        mode = llm_result["mode"]
+        logger.info("LLM decided mode: %s (%s)", mode, llm_result.get("rationale", ""))
     logger.info("MetaboMind mode: %s", mode)
 
     goal = goal_mgr.get_goal()

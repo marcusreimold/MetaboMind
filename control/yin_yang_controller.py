@@ -74,24 +74,6 @@ class YinYangOrchestrator:
         if isinstance(emotion, str) and emotion.lower() in {"negative", "unsicher"}:
             yin_votes += 1
 
-        # vague or reflective phrases
-        vague_patterns = [
-            r"ich wei[ßs]? nicht",
-            r"keine ahnung",
-            r"was vorher",
-            r"\büberfordert\b",
-            r"wovon sprichst du",
-            r"ich verstehe nicht",
-            r"was meinst du",
-            r"\bhä\b",
-            r"unklar",
-            r"chaotisch",
-            r"verwirrt",
-            r"ich bin durcheinander",
-        ]
-        if any(re.search(p, text) for p in vague_patterns):
-            yin_votes += 1
-
         # entropy trend
         if trend > 0.1:
             yin_votes += 1

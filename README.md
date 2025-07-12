@@ -11,10 +11,10 @@ All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
 The Metabo rules are stored in `METABO_PROMPT` and automatically prefixed to
 each system prompt.
 
-The controller now decides between Yin and Yang using sentiment analysis,
-vague language detection, subgoal progress and the user's emotional state in
-addition to the entropy trend. If uncertainty is detected, a small debug message
-prints the reason for the selected mode.
+Yin and Yang are primarily selected by an LLM via the function
+`decide_yin_yang_mode(user_input, metrics)`.  The metrics include the current
+entropy delta and a rough emotion estimate.  The orchestrator keeps a simple
+heuristic fallback and prints a short debug message whenever the mode changes.
 
 ## Diagrams
 
