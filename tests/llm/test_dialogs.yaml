@@ -1,0 +1,14 @@
+- input: "Ich verstehe gar nichts mehr"
+  expected:
+    mode: "YIN"
+    emotion: "negative"
+    delta_range: [-1.0, -0.01]
+    answer_contains: "verwirrt"
+    goal_hint: null
+- input: "Ich möchte mehr über Musik wissen"
+  expected:
+    mode: "YANG"
+    emotion: "positive"
+    delta_range: [0.05, 1.0]
+    answer_contains: "Musik"
+    goal_hint: "Musik"
