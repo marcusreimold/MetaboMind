@@ -9,6 +9,16 @@ Runtime data such as logs or graphs are stored in the `data/` directory.
 The `MemoryManager` also keeps its entropy snapshot under
 `data/last_entropy.txt` by default.
 
+## Setup
+
+Install the dependencies listed in `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+All tests can then be executed with `pytest`.
+
 All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
 The Metabo rules are stored in `METABO_PROMPT` and automatically prefixed to
 each system prompt.

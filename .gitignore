@@ -4,5 +4,6 @@ data/graph.gml
 data/metabo_log.jsonl
 memory/intent_graph.gml
 *.txt
+!requirements.txt
 runMetaboMind.sh
 *.zip
