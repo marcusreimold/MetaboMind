@@ -49,7 +49,11 @@ class GraphViewer(tk.Frame):
 
         self.tooltip = Tooltip(self.canvas)
         self.canvas.bind("<MouseWheel>", self._on_zoom)
+        self.canvas.bind("<ButtonPress-1>", self._on_drag_start)
+        self.canvas.bind("<B1-Motion>", self._on_drag_move)
         self._scale = 1.0
+
+        self._drag_start: tuple[int, int] | None = None
 
     def draw(self) -> None:
         self.canvas.delete("all")
@@ -75,4 +79,13 @@ class GraphViewer(tk.Frame):
         self.canvas.scale("all", self.canvas.canvasx(event.x), self.canvas.canvasy(event.y), factor, factor)
         self._scale *= factor
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+
+    def _on_drag_start(self, event: tk.Event) -> None:
+        """Remember starting coordinates for panning."""
+        self._drag_start = (event.x, event.y)
+        self.canvas.scan_mark(event.x, event.y)
+
+    def _on_drag_move(self, event: tk.Event) -> None:
+        """Scroll canvas while mouse is dragged."""
+        self.canvas.scan_dragto(event.x, event.y, gain=1)
 

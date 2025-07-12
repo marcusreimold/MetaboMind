@@ -10,6 +10,10 @@ class YinYangOrchestrator
 class ModeDecider
 class MetaboGUI
 class GraphViewer
+GraphViewer : +draw()
+GraphViewer : +_on_zoom()
+GraphViewer : +_on_drag_start()
+GraphViewer : +_on_drag_move()
 YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
 YinYangOrchestrator : +debug_print()
 YinYangOrchestrator : _history : List

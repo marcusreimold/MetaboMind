@@ -19,7 +19,9 @@ entropy delta and a rough emotion estimate.  The orchestrator keeps a simple
 heuristic fallback.  Intermediate metrics and debug output are displayed in the
 GUI tabs while the chat only shows the user text and the final LLM answer.
 The "Wissensgraph" tab visualises the knowledge graph with zoomable nodes and
-edges, including tooltips for quick inspection.
+edges, including tooltips for quick inspection. The graph can be panned by
+dragging with the left mouse button, zoomed via the mouse wheel and it updates
+automatically whenever new triplets are recorded.
 
 ## Diagrams
 

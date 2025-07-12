@@ -8,6 +8,7 @@ participant ReflectionEngine
 participant YinYangOrchestrator
 participant ModeDecider
 participant GraphViewer
+User -> GraphViewer: drag/zoom
 User -> MetaboGUI: input text
 MetaboGUI -> MetaboCycle: run_metabo_cycle(text) ##thread##
 MetaboCycle -> ModeDecider: decide_yin_yang_mode()
