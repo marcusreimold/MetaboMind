@@ -27,3 +27,9 @@ def test_yin_due_to_small_delta():
     )
     assert mode == "yin"
 
+
+def test_uncertainty_phrase_triggers_yin_even_neutral():
+    orch = yyc.YinYangOrchestrator()
+    mode = orch.decide_mode({"entropy_delta": 0.0}, "Ich verstehe gar nichts mehr", 0)
+    assert mode == "yin"
+

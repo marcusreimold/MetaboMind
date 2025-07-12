@@ -18,6 +18,7 @@ GraphViewer : +_on_drag_move()
 YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
 YinYangOrchestrator : +debug_print()
 YinYangOrchestrator : _history : List
+YinYangOrchestrator : +_contains_uncertainty(text)
 ModeDecider : +decide_yin_yang_mode(text, metrics)
 Main --> MetaboCycle
 MetaboCycle --> GoalManager
