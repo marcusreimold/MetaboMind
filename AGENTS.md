@@ -26,6 +26,10 @@ Weiterhin gelten folgende Regeln:
 - Wenn du eine neue Funktion implementierst, stelle auch sicher, dass sie an der geeigneten Stelle auch verwendet wird.
 - Aktualisiere bzw. erweitere stets auch die unter `tests/llm` befindlichen LLM-Integrationstests! Kommentiere alle Teile verständlich – die Tests sollen iterativ erweiterbar sein. Verwende dabei stets das vollständige MetaboMind-Framework, d. h. verwende keine Mocks oder Stubs!
 - Bringe du selbst als KI die Metabo-Regeln in semantischen Zusammenhang mit dem MetaboMind-Framework und passe MetaboMind unter Berücksichtigung deines semantischen Verständnisses an. Dies gilt auch für die LLM-Tests, auch diese musst du immer im semantischen Kontext beurteilen und anpassen und entscheiden, ob die Testfälle angepasst werden müssen, der Code, oder evtl. sogar beides.
+- Jeder von dir geschriebene LLM-Test muss sinnvoll in den Kontext der fünf Metabo-Regeln eingebettet sein. 
+Wenn ein Testfall der Regel „Entropieminimierung“ widerspricht (z. B. durch uneindeutige Zielstruktur, künstliche Vagheit oder kontraproduktive Zielvorgaben), ist er anzupassen. Die Tests sollen MetaboMind nicht nur technisch validieren, sondern auch auf Regelkonformität prüfen.
+- Berücksichtige bei der Beurteilung jedes Testfalls das Metabo-Regelwerk. Entscheide, ob das Verhalten von MetaboMind mit diesen Prinzipien im Einklang steht. Wenn nicht, schlage Code- oder Promptänderungen vor.
+
 
 env:
   - NAME: "OPENAI_API_KEY"
