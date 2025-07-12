@@ -48,5 +48,5 @@ MetaboGUI --> MetaboCycle : uses thread
 MetaboGUI --> TaktEngine : uses thread
 MetaboGUI --> GraphViewer
 MemoryManager --> GraphEntropyScorer
-GraphViewer --> IntentionGraph
+GraphViewer --> MetaboGraph
 @enduml
