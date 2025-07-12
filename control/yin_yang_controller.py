@@ -103,8 +103,11 @@ class YinYangOrchestrator:
             mode = "yin" if mode == "yang" else "yang"
             logger.info("Heartbeat toggled mode to %s", mode)
 
-        print(
-            f"[Modus-Entscheidung] Grund: emotion={emotion}, delta={delta:.2f} → {mode.upper()}"
+        logger.info(
+            "[Modus-Entscheidung] Grund: emotion=%s, delta=%.2f → %s",
+            emotion,
+            delta,
+            mode.upper(),
         )
 
         self._mode = mode

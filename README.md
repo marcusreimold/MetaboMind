@@ -32,5 +32,5 @@ automatically whenever new triplets are recorded.
 ### Cycle sequence
 
 ![Sequence Diagram](https://www.plantuml.com/plantuml/png/XPF1QiCm38RlVWf3BksXBv33A6oZx306WmvwCggZ9OP4DhAoBcy_EuSsISDw2xz-V_vbAViemD9thG8hdlKn8gkG96TT01BzZW9dVpY-hQZFWsrnfXyyjEz0KDzHEi_3MkKJlrkquZozKkreZZivEW7L7smRZCAG4iwnli8NjAvQG0yCeVboU4bwxaZldcwDbDfHw4KB_egwgZVBs5MfkIVJZOAnMTba_rONXJICK1M5cjZ7qxSmfQx63pCuCaFgm7IfkDcgYKVlbZTcpnAwyW9N-CXC4TdPk5Khpdy0vxusWHr93ZM_SZB3KjSefax2lMqsqb97WX0Rly9RJZX32LCID7mjFUH3LPdKQMXHukCmy8CcIMla-IemnhvThC5aUz9JCLpK7gdA_yWV)
-Updated after deduplicating IntentionGraph functions.
+Updated after logging mode decision via logger.info.
 

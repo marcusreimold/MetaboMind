@@ -1,5 +1,5 @@
 @startuml
-'/' Updated after deduplicating IntentionGraph functions
+'/' Updated after logging mode decision via logger.info
 actor User
 participant MetaboGUI
 participant MetaboCycle
