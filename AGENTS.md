@@ -24,3 +24,7 @@ Weiterhin gelten folgende Regeln:
 - Erzeuge bzw. aktualisiere die README.md im Hauptverzeichnis. Füge dort wichtige UML-Diagramme ein, die von GitHub graphisch darstellbar sind.
 - Das MetaboMind-Framework ist immer streng von der GUI über wohldefinierte Schnittstellen zu trennen. Eine Vermischung von GUI- und MetaboMind-Kernfunktionalitäten ist nicht zulässig!
 - Wenn du eine neue Funktion implementierst, stelle auch sicher, dass sie an der geeigneten Stelle auch verwendet wird.
+
+env:
+  - NAME: "OPENAI_API_KEY"
+    description: "API key for accessing external service"
