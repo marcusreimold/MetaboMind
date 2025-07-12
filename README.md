@@ -18,6 +18,8 @@ Install the dependencies listed in `requirements.txt`:
 pip install -r requirements.txt
 ```
 
+The test suite also relies on `pyyaml`, included in the requirements.
+
 All tests can then be executed with `pytest`.
 
 All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
@@ -38,6 +40,14 @@ dragging with the left mouse button, zoomed via the mouse wheel and it updates
 automatically whenever new triplets are recorded.
 The module `graph_entropy_scorer` analyses the semantic order of this graph and
 provides a normalized entropy score with textual explanation.
+
+## MetaboGraph
+
+All individual graphs are consolidated into the `MetaboGraph`. Each node carries
+a `typ` attribute like `konzept`, `intention` or `emotion` and optional
+`source` metadata. The graph is persisted as `data/metabograph.gml` and helper
+functions allow extraction of subgraphs by type and calculation of its Shannon
+entropy.
 
 ## Diagrams
 

@@ -19,6 +19,8 @@ MetaboCycle -> GraphEntropyScorer: calculate_entropy()
 GraphEntropyScorer --> MetaboCycle: score
 MetaboCycle -> ReflectionEngine: generate_reflection()
 MetaboCycle -> MemoryManager: add_triplets()
+MemoryManager -> MetaboGraph: add_triplets()
+MetaboGraph -> MetaboGraph: save()
 MetaboCycle -> MemoryManager: save_emotion()
 MetaboCycle -> YinYangOrchestrator: decide_mode(metrics)
 MetaboCycle -> ModeDecider: decide_yin_yang_mode(metrics)
