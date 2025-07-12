@@ -7,6 +7,7 @@ from typing import List, Tuple
 
 from memory.intention_graph import IntentionGraph
 from reasoning.entropy_analyzer import entropy_of_graph
+from reasoning.graph_entropy_scorer import calculate_entropy as score_graph
 from reasoning.emotion import interpret_emotion
 
 
@@ -75,7 +76,7 @@ class MemoryManager:
 
     def calculate_entropy(self) -> float:
         """Return the entropy of the current knowledge graph."""
-        return entropy_of_graph(self.graph.snapshot())
+        return score_graph(self.graph.snapshot())
 
     def load_last_entropy(self) -> float:
         """Return the previously stored entropy value."""

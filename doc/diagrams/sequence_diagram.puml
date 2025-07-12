@@ -9,11 +9,14 @@ participant ReflectionEngine
 participant YinYangOrchestrator
 participant ModeDecider
 participant GraphViewer
+participant GraphEntropyScorer
 User -> GraphViewer: drag/zoom
 User -> MetaboGUI: input text
 MetaboGUI -> MetaboCycle: run_metabo_cycle(text) ##thread##
 MetaboCycle -> GoalManager: get_goal()
 MetaboCycle -> MemoryManager: snapshot()
+MetaboCycle -> GraphEntropyScorer: calculate_entropy()
+GraphEntropyScorer --> MetaboCycle: score
 MetaboCycle -> ReflectionEngine: generate_reflection()
 MetaboCycle -> MemoryManager: add_triplets()
 MetaboCycle -> MemoryManager: save_emotion()

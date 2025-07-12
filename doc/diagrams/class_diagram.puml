@@ -11,10 +11,13 @@ class YinYangOrchestrator
 class ModeDecider
 class MetaboGUI
 class GraphViewer
+class GraphEntropyScorer
 GraphViewer : +draw()
 GraphViewer : +_on_zoom()
 GraphViewer : +_on_drag_start()
 GraphViewer : +_on_drag_move()
+GraphEntropyScorer : +calculate_entropy(graph)
+GraphEntropyScorer : +explain_entropy(graph)
 YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
 YinYangOrchestrator : +debug_print()
 YinYangOrchestrator : _history : List
@@ -33,5 +36,6 @@ Main --> YinYangOrchestrator
 MetaboGUI --> MetaboCycle : uses thread
 MetaboGUI --> TaktEngine : uses thread
 MetaboGUI --> GraphViewer
+MemoryManager --> GraphEntropyScorer
 GraphViewer --> IntentionGraph
 @enduml
