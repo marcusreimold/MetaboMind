@@ -8,6 +8,7 @@ class ReflectionEngine
 class TaktEngine
 class YinYangOrchestrator
 class ModeDecider
+class MetaboGUI
 YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
 YinYangOrchestrator : +debug_print()
 YinYangOrchestrator : _history : List
@@ -22,4 +23,6 @@ MemoryManager --> IntentionGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager
 Main --> YinYangOrchestrator
+MetaboGUI --> MetaboCycle : uses thread
+MetaboGUI --> TaktEngine : uses thread
 @enduml

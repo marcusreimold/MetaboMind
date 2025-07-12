@@ -1,7 +1,9 @@
 # MetaboMind
 
-MetaboMind is a simple goal-oriented reasoning demo. The main entry point is
-`main.py` which launches a small GUI and handles the cycle logic.
+MetaboMind is a simple goal-oriented reasoning demo.  The core framework lives
+in the ``control/`` package and can be used from the command line or via the
+Tk-based GUI in ``interface/metabo_gui.py``.  The GUI spawns worker threads for
+each user cycle and MetaboTakt so that the interface remains responsive.
 
 Runtime data such as logs or graphs are stored in the `data/` directory.
 The `MemoryManager` also keeps its entropy snapshot under
@@ -14,7 +16,8 @@ each system prompt.
 Yin and Yang are primarily selected by an LLM via the function
 `decide_yin_yang_mode(user_input, metrics)`.  The metrics include the current
 entropy delta and a rough emotion estimate.  The orchestrator keeps a simple
-heuristic fallback and prints a short debug message whenever the mode changes.
+heuristic fallback.  Intermediate metrics and debug output are displayed in the
+GUI tabs while the chat only shows the user text and the final LLM answer.
 
 ## Diagrams
 
