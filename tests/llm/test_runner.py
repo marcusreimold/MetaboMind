@@ -1,11 +1,14 @@
 import os
 import sys
+import tempfile
+import shutil
+from pathlib import Path
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from control.metabo_cycle import run_metabo_cycle
-from goals.goal_engine import update_goal
+from control import metabo_cycle
+from goals import goal_engine
 from goals.goal_manager import GoalManager
 
 LOG_PATH = os.path.join('data', 'llm_test_log.md')
@@ -23,8 +26,8 @@ def determine_mode(delta: float) -> str:
 def check_case(idx: int, case: dict, goal_mgr: GoalManager, logger):
     user_input = case['input']
     exp = case.get('expected', {})
-    result = run_metabo_cycle(user_input)
-    new_goal = update_goal(
+    result = metabo_cycle.run_metabo_cycle(user_input)
+    new_goal = goal_engine.update_goal(
         user_input=user_input,
         last_reflection=result.get('reflection', ''),
         triplets=result.get('triplets', []),
@@ -70,9 +73,32 @@ def check_case(idx: int, case: dict, goal_mgr: GoalManager, logger):
     return passed
 
 
-def run_tests(path: str = os.path.join('tests', 'llm', 'test_dialogs.yaml')) -> None:
+def run_tests(tmp_path: Path | None = None,
+              path: str = os.path.join('tests', 'llm', 'test_dialogs.yaml')) -> None:
+    """Run all dialog cases using a temporary goal manager."""
     cases = load_cases(path)
-    goal_mgr = GoalManager()
+
+    cleanup = False
+    if tmp_path is None:
+        tmp_dir = Path(tempfile.mkdtemp())
+        cleanup = True
+    else:
+        tmp_dir = Path(tmp_path) / "goals"
+        tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    goal_file = tmp_dir / "goal.txt"
+    refl_file = tmp_dir / "reflection.txt"
+
+    class TmpGoalManager(GoalManager):
+        def __init__(self):
+            super().__init__(path=str(goal_file), reflection_path=str(refl_file))
+
+    orig_mgr_cls = metabo_cycle.GoalManager
+    orig_goal_mgr = goal_engine._GOAL_MGR
+    metabo_cycle.GoalManager = TmpGoalManager
+    goal_engine._GOAL_MGR = TmpGoalManager()
+
+    goal_mgr = goal_engine._GOAL_MGR
     logger = None
     if LOG_PATH:
         os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
@@ -83,6 +109,10 @@ def run_tests(path: str = os.path.join('tests', 'llm', 'test_dialogs.yaml')) -> 
     finally:
         if logger:
             logger.close()
+        metabo_cycle.GoalManager = orig_mgr_cls
+        goal_engine._GOAL_MGR = orig_goal_mgr
+        if cleanup:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 if __name__ == '__main__':
