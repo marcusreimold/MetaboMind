@@ -9,6 +9,7 @@ class TaktEngine
 class YinYangOrchestrator
 class ModeDecider
 class MetaboGUI
+class GraphViewer
 YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
 YinYangOrchestrator : +debug_print()
 YinYangOrchestrator : _history : List
@@ -25,4 +26,6 @@ TaktEngine --> GoalManager
 Main --> YinYangOrchestrator
 MetaboGUI --> MetaboCycle : uses thread
 MetaboGUI --> TaktEngine : uses thread
+MetaboGUI --> GraphViewer
+GraphViewer --> IntentionGraph
 @enduml

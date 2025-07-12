@@ -131,10 +131,18 @@ class MetaboGUI:
     def _build_graph_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Wissensgraph")
-        btn = tk.Button(frame, text="Graph anzeigen", command=self._show_graph)
-        btn.pack(pady=10)
-        self.new_triplets_box = ScrolledText(frame, height=10, state=tk.DISABLED)
-        self.new_triplets_box.pack(fill=tk.BOTH, expand=True)
+
+        from interface.graph_viewer import GraphViewer
+
+        self.graph_viewer = GraphViewer(frame, self.memory.graph.graph)
+        self.graph_viewer.pack(fill=tk.BOTH, expand=True)
+        self._update_graph_view()
+
+        btn = tk.Button(frame, text="Aktualisieren", command=self._update_graph_view)
+        btn.pack(pady=5)
+
+        self.new_triplets_box = ScrolledText(frame, height=6, state=tk.DISABLED)
+        self.new_triplets_box.pack(fill=tk.BOTH, expand=False)
 
     def _build_log_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
@@ -215,6 +223,46 @@ class MetaboGUI:
         for t in triplets:
             self.new_triplets_box.insert(tk.END, f"{t}\n")
         self.new_triplets_box.configure(state=tk.DISABLED)
+        self._update_graph_view()
+
+    # Thread helpers ----------------------------------------------------
+    def _cycle_thread(self, user_input: str) -> None:
+        result = run_metabo_cycle(user_input)
+        self.root.after(0, lambda: self._handle_cycle_result(user_input, result))
+
+    def _handle_cycle_result(self, user_input: str, result: dict) -> None:
+        self._append_chat(f"System: {result['reflection']}\n", "system")
+        self.chat.see(tk.END)
+        self.mode_var.set(current_mode().upper())
+        self.goal_var.set(result['goal'])
+        self._update_subgoals(result.get('subgoals', []))
+        self._update_reflection(result['reflection'])
+        self.emotion_var.set(result['emotion'])
+        self.delta_var.set(f"{result['delta']:+.2f}")
+        self._update_triplets(result.get('triplets', []))
+        self._load_log()
+
+    def _takt_thread(self) -> None:
+        result = run_metabotakt()
+        self.root.after(0, lambda: self._handle_takt_result(result))
+
+    def _handle_takt_result(self, result: dict) -> None:
+        self.goal_var.set(result["goal"])
+        msg = result.get("goal_update", "")
+        if msg:
+            self._append_chat(f"[{msg}]\n", "system")
+            self.takt_goal_var.set(msg)
+        else:
+            self.takt_goal_var.set(result["goal"])
+
+        self.takt_emotion_var.set(f"{result['emotion']} ({result['intensity']})")
+        self.takt_delta_var.set(f"{result['delta']:+.2f}")
+        self.takt_reflection.configure(state=tk.NORMAL)
+        self.takt_reflection.delete("1.0", tk.END)
+        self.takt_reflection.insert(tk.END, result["reflection"])
+        self.takt_reflection.configure(state=tk.DISABLED)
+        self._load_log()
+        self._update_graph_view()
 
     # Thread helpers ----------------------------------------------------
     def _cycle_thread(self, user_input: str) -> None:
@@ -269,25 +317,15 @@ class MetaboGUI:
                 self.log_box.insert(tk.END, line + "\n")
         self.log_box.configure(state=tk.DISABLED)
 
-    def _show_graph(self) -> None:
+    def _update_graph_view(self) -> None:
         try:
-            from memory.memory_manager import get_memory_manager
-            G = get_memory_manager().graph.graph
+            self.graph_viewer.graph = self.memory.graph.graph
+            self.graph_viewer.draw()
         except Exception as exc:  # pragma: no cover - visualisation is optional
             self._append_chat(
                 f"[Graph konnte nicht geladen werden: {exc}]\n",
                 "system",
             )
-            return
-
-        win = tk.Toplevel(self.root)
-        win.title("Graph")
-        text = ScrolledText(win)
-        text.pack(fill=tk.BOTH, expand=True)
-        for u, v, data in G.edges(data=True):
-            rel = data.get('relation', '')
-            text.insert(tk.END, f"{u} --{rel}--> {v}\n")
-        text.configure(state=tk.DISABLED)
 
     def _save_graph(self) -> None:
         """Persist the knowledge graph and notify the user."""

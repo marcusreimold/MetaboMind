@@ -7,6 +7,7 @@ participant MemoryManager
 participant ReflectionEngine
 participant YinYangOrchestrator
 participant ModeDecider
+participant GraphViewer
 User -> MetaboGUI: input text
 MetaboGUI -> MetaboCycle: run_metabo_cycle(text) ##thread##
 MetaboCycle -> ModeDecider: decide_yin_yang_mode()
@@ -19,4 +20,5 @@ MetaboCycle -> ReflectionEngine: generate_reflection()
 MetaboCycle -> MemoryManager: add_triplets()
 MetaboCycle -> MemoryManager: save_emotion()
 MetaboCycle --> MetaboGUI: result
+MetaboGUI -> GraphViewer: draw
 @enduml
