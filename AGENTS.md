@@ -25,6 +25,7 @@ Weiterhin gelten folgende Regeln:
 - Das MetaboMind-Framework ist immer streng von der GUI über wohldefinierte Schnittstellen zu trennen. Eine Vermischung von GUI- und MetaboMind-Kernfunktionalitäten ist nicht zulässig!
 - Wenn du eine neue Funktion implementierst, stelle auch sicher, dass sie an der geeigneten Stelle auch verwendet wird.
 - Aktualisiere bzw. erweitere stets auch die unter `tests/llm` befindlichen LLM-Integrationstests! Kommentiere alle Teile verständlich – die Tests sollen iterativ erweiterbar sein. Verwende dabei stets das vollständige MetaboMind-Framework, d. h. verwende keine Mocks oder Stubs!
+- Bringe du selbst als KI die Metabo-Regeln in semantischen Zusammenhang mit dem MetaboMind-Framework und passe MetaboMind unter Berücksichtigung deines semantischen Verständnisses an. Dies gilt auch für die LLM-Tests, auch diese musst du immer im semantischen Kontext burteilen und anpassen und entscheiden, ob die Testfälle angepasst werden müssen, der Code, oder evtl. sogar beides.
 
 env:
   - NAME: "OPENAI_API_KEY"
