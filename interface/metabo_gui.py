@@ -264,6 +264,44 @@ class MetaboGUI:
         self._load_log()
         self._update_graph_view()
 
+    # Thread helpers ----------------------------------------------------
+    def _cycle_thread(self, user_input: str) -> None:
+        result = run_metabo_cycle(user_input)
+        self.root.after(0, lambda: self._handle_cycle_result(user_input, result))
+
+    def _handle_cycle_result(self, user_input: str, result: dict) -> None:
+        self._append_chat(f"System: {result['reflection']}\n", "system")
+        self.chat.see(tk.END)
+        self.mode_var.set(current_mode().upper())
+        self.goal_var.set(result['goal'])
+        self._update_subgoals(result.get('subgoals', []))
+        self._update_reflection(result['reflection'])
+        self.emotion_var.set(result['emotion'])
+        self.delta_var.set(f"{result['delta']:+.2f}")
+        self._update_triplets(result.get('triplets', []))
+        self._load_log()
+
+    def _takt_thread(self) -> None:
+        result = run_metabotakt()
+        self.root.after(0, lambda: self._handle_takt_result(result))
+
+    def _handle_takt_result(self, result: dict) -> None:
+        self.goal_var.set(result["goal"])
+        msg = result.get("goal_update", "")
+        if msg:
+            self._append_chat(f"[{msg}]\n", "system")
+            self.takt_goal_var.set(msg)
+        else:
+            self.takt_goal_var.set(result["goal"])
+
+        self.takt_emotion_var.set(f"{result['emotion']} ({result['intensity']})")
+        self.takt_delta_var.set(f"{result['delta']:+.2f}")
+        self.takt_reflection.configure(state=tk.NORMAL)
+        self.takt_reflection.delete("1.0", tk.END)
+        self.takt_reflection.insert(tk.END, result["reflection"])
+        self.takt_reflection.configure(state=tk.DISABLED)
+        self._load_log()
+
     def _load_log(self) -> None:
         path = Path("data/metabo_log.jsonl")
         if not path.exists():

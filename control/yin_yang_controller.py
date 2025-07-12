@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, timedelta
 from typing import Dict, List
 
@@ -72,8 +73,6 @@ class YinYangOrchestrator:
         # explicit emotion metric
         if isinstance(emotion, str) and emotion.lower() in {"negative", "unsicher"}:
             yin_votes += 1
-
-        # sentiment already captures vague expressions; explicit regex no longer used
 
         # entropy trend
         if trend > 0.1:
