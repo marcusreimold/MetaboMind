@@ -17,11 +17,11 @@ class IntentionGraph:
         filepath:
             Path to the knowledge graph file used for triplets.
         goal_path:
-            Path to the directed goal graph. Defaults to ``memory/intent_graph.gml``.
+            Path to the directed goal graph. Defaults to ``data/intent_graph.gml``.
         """
 
         self.filepath = filepath
-        self.goal_path = Path(goal_path or "memory/intent_graph.gml")
+        self.goal_path = Path(goal_path or "data/intent_graph.gml")
         self.load_graph()
         self._load_goal_graph()
 
@@ -108,7 +108,7 @@ class IntentionGraph:
             start = next(iter(self.goal_graph.nodes()))
             return list(nx.dfs_preorder_nodes(self.goal_graph, start))
 
-    def visualize_graph(self, output_path: str = "memory/intent_graph.png") -> None:
+    def visualize_graph(self, output_path: str = "data/intent_graph.png") -> None:
         """Create a simple PNG visualization of the goal graph."""
 
         import matplotlib.pyplot as plt

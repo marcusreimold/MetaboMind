@@ -6,8 +6,9 @@ Tk-based GUI in ``interface/metabo_gui.py``.  The GUI spawns worker threads for
 each user cycle and MetaboTakt so that the interface remains responsive.
 
 Runtime data such as logs or graphs are stored in the `data/` directory.
-The `MemoryManager` also keeps its entropy snapshot under
-`data/last_entropy.txt` by default.
+The `MemoryManager` stores its entropy snapshot under
+`data/last_entropy.txt` by default. Goal and reflection texts are kept in
+`data/goal.txt` and `data/last_reflection.txt`.
 
 ## Setup
 
@@ -35,16 +36,18 @@ The "Wissensgraph" tab visualises the knowledge graph with zoomable nodes and
 edges, including tooltips for quick inspection. The graph can be panned by
 dragging with the left mouse button, zoomed via the mouse wheel and it updates
 automatically whenever new triplets are recorded.
+The module `graph_entropy_scorer` analyses the semantic order of this graph and
+provides a normalized entropy score with textual explanation.
 
 ## Diagrams
 
 ### Class overview
 
-![Class Diagram](https://www.plantuml.com/plantuml/png/VLHDJyCm3BtlL-J69ZQuSq2J04sJc90GGzefyXAlZMYTaRXivTUJTX-aNRlRav_jz-8-TUeP71TvDhYvln7BhGP6BM33w0HeRIWH3hyBup17Od_7Unwe3BmN2p1qWiYmja-bol1OcLd85a2Ge3ltvDQLpTgSE2mrbcOEjkcn-8wR35LLVQ74q6dZ1tnnex0oj09AtfnAqRC3jcSfg_4PbT6HU6LmjfoVx5LwdmPteIF2ua7SQWUxuQXTbPRahxLvDnDc4baVyWgVsnyCT8VjMhRs6veq3dDaPvGV2yOzZuKlrb9RmYkpwoAHMsU8UmLaQdn0PO2l0VMjaieIXm_hPK4ANGMv75O-HeFeh97Zqf0imwQ3zOFZumF2I9WNaybZ8o4HhhauAsskcPesUn6LTaDNHYuaehGqv6gs5T7_57ROQv6DTvqEqUyefBDzgd3cmgCNd3e4tUgBrAwrzKMzut5J95tz2Vu0)
+![Class Diagram](https://www.plantuml.com/plantuml/png/XLDDJyCm3BtlL_JOYV47E721QPh4XCINj5FafQQBQ9qgSTdAhoTfrv6ctRXPVi_ni_Ci2x0ssO2YcUn2PDZfXqOMUCgiD1GR8CZHd3cbDiqmjoP6OgLfPQ3Qdv8l-5cWzDabvOhw5z_WYmU9hQ8jKFviv1uj6s1zRgKpV4Ifig2v5xXwN_VoVByFXOSpeyqiYOskcbUfZGC2KdANt6G63kaypWfDuaVhSXfnDRcm38QluAN-nXuUAF0i2OMi2s0Ks45fxdcNw7Yi2lSlCNbYL-r8xPASW0pJ4jaeQHS9uv4NYQrt8jE4LsftTIugeyZFDaqIUsLTrBZmoKMNdX9I4plLLjGaqVYGczJhcC-2lmmKDsx4nhtKIUyKdmPm9Qu-kRsz7zWoY5iiD6YC3QqQeoD_neGfOuvQ11OTj6lHw2x-h3yXBm87S_MBkAp8dKIyAhVcsg9DU6yGieWNTBj62-zhFDu_jpRUm2y0)
 
 ### Cycle sequence
 
-![Sequence Diagram](https://www.plantuml.com/plantuml/png/XP4nYyCm38Lt_mhHAJUqFo33KJYEJbaAdOtEKNC6HpQoKYx__k8CRTC4kedlFJqzx6DM51twOD1f5BXa4fCcv9rFo0gx7ZqVqhW3pD1Cyq9jIF4dVeqkq8AV8eO66RkNj8RwAEEMSgPh8AS-yZTtdicK9h3_d6_Mu3aD2af_QWgOXSVj6cHWsy_0kaAgOlqmJvwoybIhXexKTXEeLhP5oneoOyg_KTV6rz8bb4bGoSfTUfkFRMjLV0ga-NqPl96Tq5Ro_RM4yX3K78dRyhN_)
+![Sequence Diagram](https://www.plantuml.com/plantuml/png/XLB1QiCm3BtdAmovj8UoUmwxRANiK0OR7VHaL4TB38vjP6LTzlLpCaWQ9wpNfwSdFUc1OaVY590o3yHQQG-MnH4PBkvmUbb1dpfbS8OV79WZMAWMAesZRgtoXfy65MjdzxRITYvtrlOCjdebLMDWWhZXNDQL-8nAbudeWS3N7nglQ_ZUCZdVlIj7iTmR5hl7svP2b0JLmuzppLWUpr08RNtBWl6Rin6TACDD2a6jbSq0IDKZcvw_5NdEDI6KUPxTq8Vvq-KAKI7BAWARRKgR7R8GmO8FjUCbSMcr40gCQWqmIlmhnBObJ-nICw77qm7fu_gjBLAlJcFfhW4eIycalK4Ezzt2LrozSUlAAs69dnpI8PiOb4ty1saLbbEc58qDdRQoYsffvqHTdgcdPYjR_BFSfQsa9sqN3vn7ZZ2q9ebR6jZhBm00)
 
 ### LLM test sequence
 
