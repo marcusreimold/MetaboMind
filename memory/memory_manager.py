@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from memory.intention_graph import IntentionGraph
+from memory.metabo_graph import MetaboGraph
 from reasoning.entropy_analyzer import entropy_of_graph
 from reasoning.graph_entropy_scorer import calculate_entropy as score_graph
 from reasoning.emotion import interpret_emotion
@@ -20,8 +21,10 @@ class MemoryManager:
         emotion_log: str = "data/emotions.jsonl",
         reflection_path: str = "data/last_reflection.txt",
         entropy_path: str = "data/last_entropy.txt",
+        meta_path: str = "data/metabograph.gml",
     ) -> None:
         self.graph = IntentionGraph(graph_path)
+        self.metabo_graph = MetaboGraph(meta_path)
         self.emotion_log = Path(emotion_log)
         self.emotion_log.parent.mkdir(parents=True, exist_ok=True)
         self.reflection_path = Path(reflection_path)
@@ -37,6 +40,11 @@ class MemoryManager:
         before = entropy_of_graph(self.graph.snapshot())
         if triplets:
             self.graph.add_triplets(triplets)
+            try:
+                self.metabo_graph.add_triplets(triplets)
+                self.metabo_graph.save()
+            except Exception:
+                pass
         after = entropy_of_graph(self.graph.snapshot())
         return before, after
 

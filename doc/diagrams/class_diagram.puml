@@ -12,12 +12,22 @@ class ModeDecider
 class MetaboGUI
 class GraphViewer
 class GraphEntropyScorer
+class MetaboGraph
 GraphViewer : +draw()
 GraphViewer : +_on_zoom()
 GraphViewer : +_on_drag_start()
 GraphViewer : +_on_drag_move()
 GraphEntropyScorer : +calculate_entropy(graph)
 GraphEntropyScorer : +explain_entropy(graph)
+MetaboGraph : +add_graph(graph)
+MetaboGraph : +add_triplets(triplets)
+MetaboGraph : +calculate_entropy()
+MetaboGraph : +snapshot()
+MetaboGraph : +save()
+MetaboGraph : -_load()
+MetaboGraph : -_merge_node(node, typ, source)
+MetaboGraph : filepath : Path
+MetaboGraph : graph : MultiDiGraph
 YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
 YinYangOrchestrator : +debug_print()
 YinYangOrchestrator : _history : List
@@ -30,6 +40,7 @@ MetaboCycle --> ReflectionEngine
 MetaboCycle --> YinYangOrchestrator
 MetaboCycle --> ModeDecider
 MemoryManager --> IntentionGraph
+MemoryManager --> MetaboGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager
 Main --> YinYangOrchestrator
