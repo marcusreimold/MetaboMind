@@ -1,7 +1,13 @@
-"""Tkinter-based GUI for MetaboMind."""
+"""Tkinter-based GUI for MetaboMind.
+
+The GUI spawns worker threads so that expensive MetaboMind operations do not
+block the Tk event loop.  Only user messages and the final LLM answer appear in
+the chat window.  All intermediate data and debug output are organised in tabs.
+"""
 from __future__ import annotations
 
 import json
+import threading
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
@@ -77,7 +83,7 @@ class MetaboGUI:
 
         self._build_goals_tab()
         self._build_reflection_tab()
-        self._build_emotion_tab()
+        self._build_status_tab()
         self._build_graph_tab()
         self._build_log_tab()
         self._build_takt_tab()
@@ -107,13 +113,17 @@ class MetaboGUI:
         self.reflection_box = ScrolledText(frame, state=tk.DISABLED)
         self.reflection_box.pack(fill=tk.BOTH, expand=True)
 
-    def _build_emotion_tab(self) -> None:
+    def _build_status_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
-        self.notebook.add(frame, text="Emotion")
+        self.notebook.add(frame, text="Status")
+
+        self.mode_var = tk.StringVar(value=current_mode().upper())
         self.emotion_var = tk.StringVar(value="-")
         self.delta_var = tk.StringVar(value="0")
 
-        tk.Label(frame, text="Emotion:").pack(anchor=tk.W)
+        tk.Label(frame, text="Modus:").pack(anchor=tk.W)
+        tk.Label(frame, textvariable=self.mode_var).pack(anchor=tk.W)
+        tk.Label(frame, text="Emotion:").pack(anchor=tk.W, pady=(10, 0))
         tk.Label(frame, textvariable=self.emotion_var).pack(anchor=tk.W)
         tk.Label(frame, text="Δ-Entropie:").pack(anchor=tk.W, pady=(10, 0))
         tk.Label(frame, textvariable=self.delta_var).pack(anchor=tk.W)
@@ -121,10 +131,15 @@ class MetaboGUI:
     def _build_graph_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
         self.notebook.add(frame, text="Wissensgraph")
-        btn = tk.Button(frame, text="Graph anzeigen", command=self._show_graph)
-        btn.pack(pady=10)
-        self.new_triplets_box = ScrolledText(frame, height=10, state=tk.DISABLED)
-        self.new_triplets_box.pack(fill=tk.BOTH, expand=True)
+
+        from interface.graph_viewer import GraphViewer
+
+        self.graph_viewer = GraphViewer(frame, self.memory.graph.graph)
+        self.graph_viewer.pack(fill=tk.BOTH, expand=True)
+        self._update_graph_view()
+
+        self.new_triplets_box = ScrolledText(frame, height=6, state=tk.DISABLED)
+        self.new_triplets_box.pack(fill=tk.BOTH, expand=False)
 
     def _build_log_tab(self) -> None:
         frame = ttk.Frame(self.notebook)
@@ -170,37 +185,12 @@ class MetaboGUI:
         self.entry.delete(0, tk.END)
 
         self._append_chat(f"Du: {user_input}\n", "user")
-        result = run_metabo_cycle(user_input)
-        self._append_chat(f"[Modus: {current_mode().upper()}]\n", "system")
-        self._append_chat(f"System: {result['reflection']}\n", "system")
-        self.chat.see(tk.END)
-
-        # Update tabs
-        self.goal_var.set(result['goal'])
-        self._update_subgoals(result.get('subgoals', []))
-        self._update_reflection(result['reflection'])
-        self.emotion_var.set(result['emotion'])
-        self.delta_var.set(f"{result['delta']:+.2f}")
-        self._update_triplets(result.get('triplets', []))
-        self._load_log()
+        thread = threading.Thread(target=self._cycle_thread, args=(user_input,), daemon=True)
+        thread.start()
 
     def _run_takt(self) -> None:
-        result = run_metabotakt()
-        self.goal_var.set(result["goal"])
-        msg = result.get("goal_update", "")
-        if msg:
-            self._append_chat(f"[{msg}]\n", "system")
-            self.takt_goal_var.set(msg)
-        else:
-            self.takt_goal_var.set(result["goal"])
-
-        self.takt_emotion_var.set(f"{result['emotion']} ({result['intensity']})")
-        self.takt_delta_var.set(f"{result['delta']:+.2f}")
-        self.takt_reflection.configure(state=tk.NORMAL)
-        self.takt_reflection.delete("1.0", tk.END)
-        self.takt_reflection.insert(tk.END, result["reflection"])
-        self.takt_reflection.configure(state=tk.DISABLED)
-        self._load_log()
+        thread = threading.Thread(target=self._takt_thread, daemon=True)
+        thread.start()
 
     # Update helpers ----------------------------------------------------
     def _append_chat(self, text: str, tag: str = "") -> None:
@@ -230,6 +220,46 @@ class MetaboGUI:
         for t in triplets:
             self.new_triplets_box.insert(tk.END, f"{t}\n")
         self.new_triplets_box.configure(state=tk.DISABLED)
+        self._update_graph_view()
+
+    # Thread helpers ----------------------------------------------------
+    def _cycle_thread(self, user_input: str) -> None:
+        result = run_metabo_cycle(user_input)
+        self.root.after(0, lambda: self._handle_cycle_result(user_input, result))
+
+    def _handle_cycle_result(self, user_input: str, result: dict) -> None:
+        self._append_chat(f"System: {result['reflection']}\n", "system")
+        self.chat.see(tk.END)
+        self.mode_var.set(current_mode().upper())
+        self.goal_var.set(result['goal'])
+        self._update_subgoals(result.get('subgoals', []))
+        self._update_reflection(result['reflection'])
+        self.emotion_var.set(result['emotion'])
+        self.delta_var.set(f"{result['delta']:+.2f}")
+        self._update_triplets(result.get('triplets', []))
+        self._load_log()
+
+    def _takt_thread(self) -> None:
+        result = run_metabotakt()
+        self.root.after(0, lambda: self._handle_takt_result(result))
+
+    def _handle_takt_result(self, result: dict) -> None:
+        self.goal_var.set(result["goal"])
+        msg = result.get("goal_update", "")
+        if msg:
+            self._append_chat(f"[{msg}]\n", "system")
+            self.takt_goal_var.set(msg)
+        else:
+            self.takt_goal_var.set(result["goal"])
+
+        self.takt_emotion_var.set(f"{result['emotion']} ({result['intensity']})")
+        self.takt_delta_var.set(f"{result['delta']:+.2f}")
+        self.takt_reflection.configure(state=tk.NORMAL)
+        self.takt_reflection.delete("1.0", tk.END)
+        self.takt_reflection.insert(tk.END, result["reflection"])
+        self.takt_reflection.configure(state=tk.DISABLED)
+        self._load_log()
+        self._update_graph_view()
 
     def _load_log(self) -> None:
         path = Path("data/metabo_log.jsonl")
@@ -246,25 +276,15 @@ class MetaboGUI:
                 self.log_box.insert(tk.END, line + "\n")
         self.log_box.configure(state=tk.DISABLED)
 
-    def _show_graph(self) -> None:
+    def _update_graph_view(self) -> None:
         try:
-            from memory.memory_manager import get_memory_manager
-            G = get_memory_manager().graph.graph
+            self.graph_viewer.graph = self.memory.graph.graph
+            self.graph_viewer.draw()
         except Exception as exc:  # pragma: no cover - visualisation is optional
             self._append_chat(
                 f"[Graph konnte nicht geladen werden: {exc}]\n",
                 "system",
             )
-            return
-
-        win = tk.Toplevel(self.root)
-        win.title("Graph")
-        text = ScrolledText(win)
-        text.pack(fill=tk.BOTH, expand=True)
-        for u, v, data in G.edges(data=True):
-            rel = data.get('relation', '')
-            text.insert(tk.END, f"{u} --{rel}--> {v}\n")
-        text.configure(state=tk.DISABLED)
 
     def _save_graph(self) -> None:
         """Persist the knowledge graph and notify the user."""

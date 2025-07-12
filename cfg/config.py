@@ -63,6 +63,11 @@ PROMPTS = {
         "Pr\u00fcfe anhand der Nutzereingabe, ob ein neues Thema verfolgt werden soll. "
         "Nutze die Funktion 'propose_goal', wenn ein klares neues Ziel erkennbar ist."
     ),
+    'mode_decider_system': (
+        METABO_PROMPT + "\n" +
+        "Beurteile anhand der Nutzereingabe und der Metriken, ob Yin oder Yang angemessen ist. "
+        "Begr\u00fcnde deine Entscheidung knapp \u00fcber die Funktion 'decide_yin_yang_mode'."
+    ),
     'goal_shift_reflection': (
         METABO_PROMPT + "\nReflektiere kurz den Zielwechsel von '{old}' zu '{new}'."
     ),

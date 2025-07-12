@@ -7,13 +7,29 @@ class IntentionGraph
 class ReflectionEngine
 class TaktEngine
 class YinYangOrchestrator
+class ModeDecider
+class MetaboGUI
+class GraphViewer
+GraphViewer : +draw()
+GraphViewer : +_on_zoom()
+GraphViewer : +_on_drag_start()
+GraphViewer : +_on_drag_move()
+YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
+YinYangOrchestrator : +debug_print()
+YinYangOrchestrator : _history : List
+ModeDecider : +decide_yin_yang_mode(text, metrics)
 Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
 MetaboCycle --> ReflectionEngine
 MetaboCycle --> YinYangOrchestrator
+MetaboCycle --> ModeDecider
 MemoryManager --> IntentionGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager
 Main --> YinYangOrchestrator
+MetaboGUI --> MetaboCycle : uses thread
+MetaboGUI --> TaktEngine : uses thread
+MetaboGUI --> GraphViewer
+GraphViewer --> IntentionGraph
 @enduml
