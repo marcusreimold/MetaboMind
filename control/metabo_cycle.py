@@ -36,24 +36,14 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     memory = get_memory_manager()
     log = MetaboLogger()
 
-    ent_before_cycle = memory.load_last_entropy()
-    current_ent = entropy_of_graph(memory.graph.snapshot())
-    delta_initial = current_ent - ent_before_cycle
-    initial_emotion = interpret_emotion(ent_before_cycle, current_ent)
-
     try:
         path = memory.graph.get_goal_path()
         sub_done = max(len(path) - 1, 0)
     except Exception:
         sub_done = 0
 
-    metrics = {"entropy_delta": delta_initial, "emotion": initial_emotion["emotion"]}
-    mode = decide_mode(metrics, user_input, sub_done)
-    llm_result = decide_yin_yang_mode(user_input, metrics)
-    if llm_result and llm_result.get("mode") in {"yin", "yang"}:
-        mode = llm_result["mode"]
-        logger.info("LLM decided mode: %s (%s)", mode, llm_result.get("rationale", ""))
-    logger.info("MetaboMind mode: %s", mode)
+    mode = current_mode()
+
 
     goal = goal_mgr.get_goal()
     last_reflection = goal_mgr.load_reflection()
@@ -128,8 +118,18 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     else:
         reflection_text = last_reflection
         triplets = []
-        entropy_after = current_ent
-        emotion = interpret_emotion(ent_before_cycle, entropy_after)
+        entropy_after = entropy_before
+        emotion = interpret_emotion(entropy_before, entropy_after)
+
+    metrics = {"entropy_delta": emotion["delta"], "emotion": emotion["emotion"]}
+    mode = decide_mode(metrics, user_input, sub_done)
+    llm_result = decide_yin_yang_mode(user_input, metrics)
+    if llm_result and llm_result.get("mode") in {"yin", "yang"}:
+        mode = llm_result["mode"]
+        logger.info("LLM decided mode: %s (%s)", mode, llm_result.get("rationale", ""))
+    logger.info(
+        "MetaboMind mode: %s (Δ%.2f → %s)", mode, emotion["delta"], emotion["emotion"]
+    )
 
 
 

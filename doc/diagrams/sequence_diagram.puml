@@ -1,5 +1,5 @@
 @startuml
-'/' Updated after adding requirements.txt
+'/ updated after emotion-mode fix
 actor User
 participant MetaboGUI
 participant MetaboCycle
@@ -12,15 +12,15 @@ participant GraphViewer
 User -> GraphViewer: drag/zoom
 User -> MetaboGUI: input text
 MetaboGUI -> MetaboCycle: run_metabo_cycle(text) ##thread##
-MetaboCycle -> ModeDecider: decide_yin_yang_mode()
-ModeDecider --> MetaboCycle: mode
-MetaboCycle -> YinYangOrchestrator: decide_mode(metrics)
-YinYangOrchestrator -> YinYangOrchestrator: debug_print()
 MetaboCycle -> GoalManager: get_goal()
 MetaboCycle -> MemoryManager: snapshot()
 MetaboCycle -> ReflectionEngine: generate_reflection()
 MetaboCycle -> MemoryManager: add_triplets()
 MetaboCycle -> MemoryManager: save_emotion()
+MetaboCycle -> YinYangOrchestrator: decide_mode(metrics)
+MetaboCycle -> ModeDecider: decide_yin_yang_mode(metrics)
+ModeDecider --> MetaboCycle: mode
+YinYangOrchestrator -> YinYangOrchestrator: debug_print()
 MetaboCycle --> MetaboGUI: result
 MetaboGUI -> GraphViewer: draw
 @enduml
