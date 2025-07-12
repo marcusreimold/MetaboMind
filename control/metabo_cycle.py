@@ -38,7 +38,14 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     ent_before_cycle = memory.load_last_entropy()
     current_ent = entropy_of_graph(memory.graph.snapshot())
     delta_initial = current_ent - ent_before_cycle
-    mode = decide_mode({"entropy_delta": delta_initial}, user_input)
+
+    try:
+        path = memory.graph.get_goal_path()
+        sub_done = max(len(path) - 1, 0)
+    except Exception:
+        sub_done = 0
+
+    mode = decide_mode({"entropy_delta": delta_initial}, user_input, sub_done)
     logger.info("MetaboMind mode: %s", mode)
 
     goal = goal_mgr.get_goal()
