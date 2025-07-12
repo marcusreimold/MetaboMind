@@ -20,6 +20,8 @@ def setup(monkeypatch, tmp_path, goal=""):
             self.goal_graph.add_edge(a, b)
         def _save_goal_graph(self):
             pass
+        def get_goal_path(self):
+            return list(self.goal_graph.nodes())
 
     class DummyMem:
         def __init__(self):

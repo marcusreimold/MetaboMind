@@ -7,6 +7,8 @@ class IntentionGraph
 class ReflectionEngine
 class TaktEngine
 class YinYangOrchestrator
+YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
+YinYangOrchestrator : _history : List
 Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
