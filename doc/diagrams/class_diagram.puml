@@ -1,4 +1,5 @@
 @startuml
+'/' Updated after deduplicating IntentionGraph functions
 class Main
 class MetaboCycle
 class GoalManager

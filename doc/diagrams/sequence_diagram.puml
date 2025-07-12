@@ -1,4 +1,5 @@
 @startuml
+'/' Updated after deduplicating IntentionGraph functions
 actor User
 participant MetaboGUI
 participant MetaboCycle
