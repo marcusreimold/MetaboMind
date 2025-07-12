@@ -19,10 +19,6 @@ def load_cases(path: str):
         return yaml.safe_load(fh) or []
 
 
-def determine_mode(delta: float) -> str:
-    return 'YANG' if delta >= 0 else 'YIN'
-
-
 def check_case(idx: int, case: dict, goal_mgr: GoalManager, logger):
     user_input = case['input']
     exp = case.get('expected', {})
@@ -37,7 +33,7 @@ def check_case(idx: int, case: dict, goal_mgr: GoalManager, logger):
     answer = result.get('reflection', '')
     emotion = result.get('emotion', '')
     delta = result.get('delta', 0.0)
-    mode = determine_mode(delta)
+    mode = (result.get('mode') or '').upper()
 
     passed = True
     reasons = []
