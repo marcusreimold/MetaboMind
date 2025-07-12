@@ -18,7 +18,7 @@ class MemoryManager:
         self,
         graph_path: str = "data/graph.gml",
         emotion_log: str = "data/emotions.jsonl",
-        reflection_path: str = "memory/last_reflection.txt",
+        reflection_path: str = "data/last_reflection.txt",
         entropy_path: str = "data/last_entropy.txt",
     ) -> None:
         self.graph = IntentionGraph(graph_path)

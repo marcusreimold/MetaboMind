@@ -8,8 +8,8 @@ class GoalManager:
 
     def __init__(
         self,
-        path: str = "memory/goal.txt",
-        reflection_path: str = "memory/last_reflection.txt",
+        path: str = "data/goal.txt",
+        reflection_path: str = "data/last_reflection.txt",
     ) -> None:
         self.goal_path = Path(path)
         self.goal_path.parent.mkdir(parents=True, exist_ok=True)

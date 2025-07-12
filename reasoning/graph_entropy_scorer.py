@@ -1,6 +1,22 @@
 import networkx as nx
 
 
+def _to_simple_undirected(graph: nx.Graph) -> nx.Graph:
+    """Return a simple undirected version of ``graph``.
+
+    ``networkx`` functions such as clustering do not support MultiGraphs. This
+    helper collapses parallel edges and drops direction to avoid related
+    exceptions.
+    """
+    if isinstance(graph, (nx.MultiGraph, nx.MultiDiGraph)):
+        g = nx.Graph()
+        g.add_nodes_from(graph.nodes())
+        g.add_edges_from(graph.edges())
+    else:
+        g = graph.to_undirected() if graph.is_directed() else graph
+    return g
+
+
 def _analyse_graph(graph: nx.Graph) -> dict:
     """Return basic structural metrics for ``graph``."""
     n = graph.number_of_nodes()
@@ -11,12 +27,13 @@ def _analyse_graph(graph: nx.Graph) -> dict:
         components = list(nx.connected_components(graph))
     num_components = len(components)
     avg_degree = sum(d for _, d in graph.degree()) / n if n else 0.0
-    clustering = nx.average_clustering(graph.to_undirected()) if n > 1 else 0.0
+    undirected_simple = _to_simple_undirected(graph)
+    clustering = nx.average_clustering(undirected_simple) if n > 1 else 0.0
     largest = max(components, key=len) if components else set()
     avg_path_len = None
     if len(largest) > 1:
         try:
-            sub = graph.subgraph(largest).to_undirected()
+            sub = _to_simple_undirected(graph.subgraph(largest))
             avg_path_len = nx.average_shortest_path_length(sub)
         except Exception:
             avg_path_len = None

@@ -6,8 +6,9 @@ Tk-based GUI in ``interface/metabo_gui.py``.  The GUI spawns worker threads for
 each user cycle and MetaboTakt so that the interface remains responsive.
 
 Runtime data such as logs or graphs are stored in the `data/` directory.
-The `MemoryManager` also keeps its entropy snapshot under
-`data/last_entropy.txt` by default.
+The `MemoryManager` stores its entropy snapshot under
+`data/last_entropy.txt` by default. Goal and reflection texts are kept in
+`data/goal.txt` and `data/last_reflection.txt`.
 
 ## Setup
 

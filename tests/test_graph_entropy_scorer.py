@@ -19,3 +19,10 @@ def test_chaotic_graph_entropy():
     explanation = explain_entropy(g)
     assert "Knoten" in explanation
 
+
+def test_multidigraph_entropy():
+    g = nx.MultiDiGraph()
+    g.add_edge("a", "b")
+    score = calculate_entropy(g)
+    assert 0 <= score <= 1
+
