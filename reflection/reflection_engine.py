@@ -3,9 +3,13 @@ import json
 import logging
 from typing import Dict, List, Tuple, Optional
 
+from datetime import datetime
+
 from utils.llm_client import get_client
 from goals import goal_manager
 from memory.memory_manager import get_memory_manager
+from memory.graph_manager import get_graph_manager, GraphManager
+from parsing import triplet_extractor
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 
@@ -197,3 +201,50 @@ def generate_reflection(
         "explanation": goal_update_msg,
         "triplets": [],
     }
+
+
+def store_reflection_triplets(
+    reflection: str,
+    goal: str,
+    emotion: dict | None = None,
+    manager: GraphManager | None = None,
+) -> List[Tuple[str, str, str]]:
+    """Extract triplets from ``reflection`` and persist them via ``GraphManager``.
+
+    Parameters
+    ----------
+    reflection:
+        The textual reflection returned by the LLM.
+    goal:
+        Currently active goal used to connect the reflection node.
+    emotion:
+        Optional emotion metadata to store with the reflection node.
+    manager:
+        Optional preconfigured :class:`GraphManager` instance.
+
+    Returns
+    -------
+    List[Tuple[str, str, str]]
+        Triplets extracted from the reflection.
+    """
+
+    manager = manager or get_graph_manager()
+    triples = triplet_extractor.extract(reflection)
+    if not triples:
+        return []
+
+    manager.add_triplets(triples, source="reflection")
+
+    ref_node = f"reflexion:{datetime.utcnow().isoformat(timespec='seconds')}"
+    manager.graph.add_node(ref_node, typ="reflexion", text=reflection)
+
+    if goal:
+        goal_node = f"ziel:{goal}"
+        manager.graph.add_node(goal_node, typ="ziel", text=goal)
+        manager.graph.add_edge(ref_node, goal_node, relation="reflektiert_zu", typ="relation")
+
+    if emotion:
+        manager.graph.nodes[ref_node]["meta"] = json.dumps(emotion)
+
+    manager.save_graph()
+    return triples

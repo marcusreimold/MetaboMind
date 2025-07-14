@@ -4,7 +4,7 @@ from typing import Dict
 
 from goals import goal_engine
 from memory.memory_manager import get_memory_manager
-from reflection.reflection_engine import run_llm_task
+from reflection.reflection_engine import run_llm_task, store_reflection_triplets
 from cfg.config import PROMPTS
 
 
@@ -24,6 +24,10 @@ def run_metabotakt(api_key: str | None = None) -> Dict[str, object]:
     reflection = run_llm_task(prompt, api_key=api_key)
     if reflection:
         memory.store_reflection(reflection)
+        try:
+            store_reflection_triplets(reflection, current_goal, emotion)
+        except Exception:
+            pass
 
     new_goal = goal_engine.update_goal(
         user_input=reflection,

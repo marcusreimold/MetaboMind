@@ -40,6 +40,7 @@ def setup(monkeypatch, change_goal=False):
     else:
         monkeypatch.setattr(takt_engine.goal_engine, "update_goal", lambda **k: "A")
     monkeypatch.setattr(takt_engine, "run_llm_task", lambda *a, **k: "ref")
+    monkeypatch.setattr(takt_engine, "store_reflection_triplets", lambda *a, **k: [])
     return mem
 
 
