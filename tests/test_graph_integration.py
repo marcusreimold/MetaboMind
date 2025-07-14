@@ -7,7 +7,7 @@ import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from control import metabo_cycle
+from control import metabo_engine as metabo_cycle
 from goals import goal_manager, goal_updater
 from memory import memory_manager
 from utils import llm_client
@@ -138,7 +138,7 @@ def test_graph_integration(monkeypatch, tmp_path):
         cases = yaml.safe_load(fh) or []
 
     for case in cases:
-        metabo_cycle.run_metabo_cycle(case["input"])
+        metabo_cycle.run_metabo_cycle(case["input"], source_type="user")
         G = nx.read_gml(mgr.metabo_graph.filepath)
 
         for subj, rel, obj in case.get("expected_graph_triples", []):

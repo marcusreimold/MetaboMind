@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Dict
 
-from control.metabo_cycle import run_metabo_cycle
+from control.metabo_engine import run_metabo_cycle
 from goals.goal_manager import get_active_goal, set_goal
 from memory.recall_context import recall_context
 from utils import intent_detector
@@ -37,9 +37,9 @@ def run_cycle(user_input: str) -> Dict[str, object]:
         except Exception as exc:
             logger.warning("goal execution failed: %s", exc)
             generated = ""
-        result = run_metabo_cycle(generated)
+        result = run_metabo_cycle(generated, source_type="system")
     else:
-        result = run_metabo_cycle(user_input)
+        result = run_metabo_cycle(user_input, source_type="user")
 
     if recalled:
         result["context_recall"] = recalled

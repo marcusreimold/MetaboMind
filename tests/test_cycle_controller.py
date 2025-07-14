@@ -12,7 +12,7 @@ def test_run_cycle_recall(monkeypatch):
         called['scope'] = scope
         return [{"subject": "A", "predicate": "p", "object": "B"}]
     monkeypatch.setattr(cycle_controller, "recall_context", fake_recall)
-    monkeypatch.setattr(cycle_controller, "run_metabo_cycle", lambda x: {"reflection": "r", "goal": "g", "triplets": [], "emotion": "neutral", "delta": 0.0})
+    monkeypatch.setattr(cycle_controller, "run_metabo_cycle", lambda *a, **k: {"reflection": "r", "goal": "g", "triplets": [], "emotion": "neutral", "delta": 0.0})
     res = cycle_controller.run_cycle("hi")
     assert called['scope'] == "conversation"
     assert res["antwort"] == "r"

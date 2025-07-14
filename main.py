@@ -1,8 +1,7 @@
 """Entry point for MetaboMind launching the Tkinter GUI."""
 from __future__ import annotations
 
-from control.metabo_cycle import run_metabo_cycle
-from control.takt_engine import run_metabotakt
+from control.metabo_engine import run_metabo_cycle, metabo_tick
 from goals.goal_manager import set_goal
 from goals.goal_updater import update_goal
 from interface.metabo_gui import MetaboGUI
@@ -39,7 +38,7 @@ def main() -> None:
             print_help()
             continue
         if user_input == "/takt":
-            result = run_metabotakt()
+            result = metabo_tick()
             print("[Metabotakt ausgeführt]")
             if result["goal_update"]:
                 print(result["goal_update"])
@@ -55,7 +54,7 @@ def main() -> None:
                 print(f"[Neues Ziel gespeichert: {new_goal}]")
             continue
 
-        result = run_metabo_cycle(user_input)
+        result = run_metabo_cycle(user_input, source_type="user")
         new_goal = update_goal(
             user_input=user_input,
             last_goal=result.get("goal", ""),

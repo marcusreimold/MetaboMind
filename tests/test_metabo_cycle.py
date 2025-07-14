@@ -4,7 +4,7 @@ import types
 import networkx as nx
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from control import metabo_cycle
+from control import metabo_engine as metabo_cycle
 
 
 def setup(monkeypatch, tmp_path, goal=""):
@@ -60,7 +60,7 @@ def test_goal_switch(monkeypatch, tmp_path):
     setup(monkeypatch, tmp_path, goal="Alt")
     monkeypatch.setattr(metabo_cycle, "propose_goal", lambda ui: "Neu")
     monkeypatch.setattr(metabo_cycle, "check_goal_shift", lambda a, b: True)
-    res = metabo_cycle.run_metabo_cycle("User input")
+    res = metabo_cycle.run_metabo_cycle("User input", source_type="user")
     assert res["goal"] == "Neu"
 
 
@@ -68,6 +68,6 @@ def test_llm_mode_override(monkeypatch, tmp_path):
     setup(monkeypatch, tmp_path)
     monkeypatch.setattr(metabo_cycle, "decide_yin_yang_mode", lambda *a, **k: {"mode": "yin", "rationale": "test"})
     monkeypatch.setattr(metabo_cycle, "decide_mode", lambda *a, **k: "yang")
-    res = metabo_cycle.run_metabo_cycle("Hallo")
+    res = metabo_cycle.run_metabo_cycle("Hallo", source_type="user")
     assert res["mode"] == "yin"
 
