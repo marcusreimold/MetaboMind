@@ -7,7 +7,7 @@ import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from control import metabo_cycle
+from control import metabo_engine as metabo_cycle
 from goals import goal_engine
 from goals.goal_manager import GoalManager
 
@@ -22,7 +22,7 @@ def load_cases(path: str):
 def check_case(idx: int, case: dict, goal_mgr: GoalManager, logger):
     user_input = case['input']
     exp = case.get('expected', {})
-    result = metabo_cycle.run_metabo_cycle(user_input)
+    result = metabo_cycle.run_metabo_cycle(user_input, source_type="user")
     new_goal = goal_engine.update_goal(
         user_input=user_input,
         last_reflection=result.get('reflection', ''),

@@ -13,8 +13,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 
-from control.metabo_cycle import run_metabo_cycle
-from control.takt_engine import run_metabotakt
+from control.metabo_engine import run_metabo_cycle, metabo_tick
 from goals.goal_manager import get_active_goal, set_goal
 from memory.memory_manager import get_memory_manager
 import utils.llm_client as llm_client
@@ -224,7 +223,7 @@ class MetaboGUI:
 
     # Thread helpers ----------------------------------------------------
     def _cycle_thread(self, user_input: str) -> None:
-        result = run_metabo_cycle(user_input)
+        result = run_metabo_cycle(user_input, source_type="user")
         self.root.after(0, lambda: self._handle_cycle_result(user_input, result))
 
     def _handle_cycle_result(self, user_input: str, result: dict) -> None:
@@ -240,7 +239,7 @@ class MetaboGUI:
         self._load_log()
 
     def _takt_thread(self) -> None:
-        result = run_metabotakt()
+        result = metabo_tick()
         self.root.after(0, lambda: self._handle_takt_result(result))
 
     def _handle_takt_result(self, result: dict) -> None:
