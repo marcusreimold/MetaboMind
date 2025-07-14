@@ -5,9 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
 
-from memory.intention_graph import IntentionGraph
 from memory.metabo_graph import MetaboGraph
-from reasoning.entropy_analyzer import entropy_of_graph
 from reasoning.graph_entropy_scorer import calculate_entropy as score_graph
 from reasoning.emotion import interpret_emotion
 
@@ -17,19 +15,13 @@ class MemoryManager:
 
     def __init__(
         self,
-        graph_path: str = "data/graph.gml",
         emotion_log: str = "data/emotions.jsonl",
         reflection_path: str = "data/last_reflection.txt",
         entropy_path: str = "data/last_entropy.txt",
         meta_path: str = "data/metabograph.gml",
-        intent_graph_path: str | None = None,
     ) -> None:
-        self.graph = IntentionGraph(graph_path, goal_path=intent_graph_path)
         self.metabo_graph = MetaboGraph(meta_path)
-        try:
-            self.metabo_graph.import_intention_graph(self.graph.goal_path)
-        except Exception:
-            pass
+        self.graph = self.metabo_graph
         self.emotion_log = Path(emotion_log)
         self.emotion_log.parent.mkdir(parents=True, exist_ok=True)
         self.reflection_path = Path(reflection_path)
@@ -40,17 +32,13 @@ class MemoryManager:
     # ------------------------------------------------------------------
     # Triplet handling
 
-    def store_triplets(self, triplets: List[Tuple[str, str, str]]) -> tuple[float, float]:
-        """Add ``triplets`` to the intention graph and return entropy values."""
-        before = entropy_of_graph(self.graph.snapshot())
+    def store_triplets(self, triplets: List[dict]) -> tuple[float, float]:
+        """Add ``triplets`` to the MetaboGraph and return entropy values."""
+        before = self.metabo_graph.calculate_entropy()
         if triplets:
-            self.graph.add_triplets(triplets)
-            try:
-                self.metabo_graph.add_triplets(triplets)
-                self.metabo_graph.save()
-            except Exception:
-                pass
-        after = entropy_of_graph(self.graph.snapshot())
+            from parsing import triplet_pipeline
+            triplet_pipeline.add_triplets_to_graph(triplets, mg=self.metabo_graph)
+        after = self.metabo_graph.calculate_entropy()
         return before, after
 
     def add_metabo_insight_to_graph(
@@ -64,10 +52,20 @@ class MemoryManager:
         """Insert all insights of one cycle into the :class:`MetaboGraph`."""
 
         if triplets:
-            try:
-                self.metabo_graph.add_triplets(triplets, node_typ="konzept", edge_typ="relation", source="llm")
-            except Exception:
-                pass
+            from parsing import triplet_pipeline
+            triplet_pipeline.add_triplets_to_graph(
+                [
+                    {
+                        "subject": s,
+                        "predicate": r,
+                        "object": o,
+                        "source": "llm",
+                        "timestamp": datetime.utcnow().isoformat(timespec="seconds"),
+                    }
+                    for s, r, o in triplets
+                ],
+                mg=self.metabo_graph,
+            )
 
         inp_node = f"eingabe:{user_input}"
         self.metabo_graph.graph.add_node(inp_node, typ="eingabe", text=user_input)
@@ -139,7 +137,7 @@ class MemoryManager:
 
     def calculate_entropy(self) -> float:
         """Return the entropy of the current knowledge graph."""
-        return score_graph(self.graph.snapshot())
+        return score_graph(self.metabo_graph.snapshot())
 
     def load_last_entropy(self) -> float:
         """Return the previously stored entropy value."""

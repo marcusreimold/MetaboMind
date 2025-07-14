@@ -6,9 +6,9 @@ from control.cycle_manager import CycleManager
 
 
 def setup_common(monkeypatch, cm):
-    monkeypatch.setattr(cm.memory.graph, "_save_goal_graph", lambda: None)
-    monkeypatch.setattr(cm.memory.graph, "save_graph", lambda: None)
-    monkeypatch.setattr("control.cycle_manager.extract_triplets_via_llm", lambda text: [])
+    monkeypatch.setattr(cm.memory.metabo_graph, "_save_goal_graph", lambda: None)
+    monkeypatch.setattr(cm.memory.metabo_graph, "save", lambda: None)
+    monkeypatch.setattr("control.cycle_manager.extract_triplets", lambda text, source="user_input": [])
     monkeypatch.setattr("control.cycle_manager.generate_reflection", lambda **k: {"reflection": ""})
     monkeypatch.setattr(cm.memory, "save_emotion", lambda *a, **k: {"delta": 0.0, "emotion": "neutral", "intensity": "low"})
     monkeypatch.setattr(cm.memory, "store_reflection", lambda text: None)

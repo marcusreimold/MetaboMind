@@ -24,7 +24,8 @@ def setup(monkeypatch, tmp_path, goal=""):
 
     class DummyMem:
         def __init__(self):
-            self.graph = DummyGraph()
+            self.metabo_graph = DummyGraph()
+            self.graph = self.metabo_graph
             self.ent = 0.0
 
         def load_last_entropy(self):
@@ -44,7 +45,7 @@ def setup(monkeypatch, tmp_path, goal=""):
     monkeypatch.setattr(metabo_cycle, "load_context", lambda g, goal: [])
     monkeypatch.setattr(metabo_cycle, "recall_context", lambda scope="goal", limit=5: [])
     monkeypatch.setattr(metabo_cycle, "generate_reflection", lambda **k: {"reflection": ""})
-    monkeypatch.setattr(metabo_cycle, "extract_triplets_via_llm", lambda text: [])
+    monkeypatch.setattr(metabo_cycle, "extract_triplets", lambda text, source="user_input": [])
 
     path = tmp_path / "goal.txt"
     refl = tmp_path / "ref.txt"

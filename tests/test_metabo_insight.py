@@ -4,7 +4,6 @@ from memory.memory_manager import MemoryManager
 
 def test_add_metabo_insight(tmp_path):
     mem = MemoryManager(
-        graph_path=str(tmp_path / "g.gml"),
         emotion_log=str(tmp_path / "e.jsonl"),
         reflection_path=str(tmp_path / "r.txt"),
         entropy_path=str(tmp_path / "ent.txt"),

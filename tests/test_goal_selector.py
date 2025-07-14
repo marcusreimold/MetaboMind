@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from goals import goal_updater as goal_selector
 from goals.goal_manager import GoalManager
-from memory.intention_graph import IntentionGraph
+from memory.metabo_graph import MetaboGraph
 
 
 def test_propose_goal_no_openai(monkeypatch):
@@ -20,9 +20,9 @@ def test_check_goal_shift_basic(monkeypatch):
 
 def test_apply_goal_shift(tmp_path, monkeypatch):
     gm = GoalManager(path=str(tmp_path / "goal.txt"))
-    ig = IntentionGraph(filepath=str(tmp_path / "g.gml"))
+    mg = MetaboGraph(filepath=str(tmp_path / "g.gml"))
     called = {}
-    monkeypatch.setattr(ig, "add_goal_transition", lambda a, b: called.setdefault("edge", (a, b)))
-    goal_selector.apply_goal_shift("Old", "New", gm, ig)
+    monkeypatch.setattr(mg, "add_goal_transition", lambda a, b: called.setdefault("edge", (a, b)))
+    goal_selector.apply_goal_shift("Old", "New", gm, mg)
     assert gm.get_goal() == "New"
     assert called["edge"] == ("Old", "New")

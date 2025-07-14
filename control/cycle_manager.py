@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import os
-from typing import List, Tuple, Optional
+from datetime import datetime
+from typing import List, Optional
 
 from goals import goal_engine
 from memory.memory_manager import get_memory_manager
 
 from logs.logger import MetaboLogger
 
-from parsing.triplet_parser_llm import extract_triplets_via_llm
+from parsing.triplet_pipeline import extract_triplets
 
 from reflection.reflection_engine import generate_reflection, run_llm_task
 from cfg.config import PROMPTS
@@ -26,11 +27,19 @@ class CycleManager:
         self.current_goal = goal_engine.get_current_goal()
 
 
-    def _extract_triplets(self, text: str) -> List[Tuple[str, str, str]]:
+    def _extract_triplets(self, text: str) -> List[dict]:
         """Naive fallback extraction of triples when no API key is available."""
         words = text.split()
         if len(words) >= 3:
-            return [(words[0], words[1], " ".join(words[2:]))]
+            return [
+                {
+                    "subject": words[0],
+                    "predicate": words[1],
+                    "object": " ".join(words[2:]),
+                    "source": "user_input",
+                    "timestamp": datetime.utcnow().isoformat(timespec="seconds"),
+                }
+            ]
         return []
 
     def _reflect(
@@ -52,9 +61,13 @@ class CycleManager:
         self.cycle += 1
 
         if self.api_key:
-            triplets = extract_triplets_via_llm(text)
+            triplets = extract_triplets(text, source="user_input")
         else:
             triplets = self._extract_triplets(text)
+
+        tuple_triplets = [
+            (t["subject"], t["predicate"], t["object"]) for t in triplets
+        ]
 
         before, after = self.memory.store_triplets(triplets)
         emo = self.memory.save_emotion(before, after)
@@ -62,7 +75,7 @@ class CycleManager:
         new_goal = goal_engine.update_goal(
             user_input=text,
             last_reflection=self.memory.load_reflection(),
-            triplets=triplets,
+            triplets=tuple_triplets,
         )
 
         goal_message = ""
@@ -84,7 +97,7 @@ class CycleManager:
             self.current_goal = new_goal
             goal_message = f"Neues Ziel erkannt: {self.current_goal}"
 
-        reflection = self._reflect(text, triplets)
+        reflection = self._reflect(text, tuple_triplets)
         self.memory.store_reflection(reflection.get("reflection", ""))
 
         log_entry = (

@@ -15,6 +15,7 @@ class MetaboGraph:
         self.filepath = Path(filepath)
         self.filepath.parent.mkdir(parents=True, exist_ok=True)
         self._load()
+        self._build_goal_graph()
 
     # ------------------------------------------------------------------
     def _load(self) -> None:
@@ -40,6 +41,13 @@ class MetaboGraph:
             pass
 
     # ------------------------------------------------------------------
+    def _build_goal_graph(self) -> None:
+        """Create directed graph view for goal transitions."""
+        self.goal_graph = nx.DiGraph()
+        for u, v, data in self.graph.edges(data=True):
+            if data.get("relation") == "goal_transition":
+                self.goal_graph.add_edge(u, v)
+
     def _merge_node(self, node: str, typ: str | None, source: str | None) -> None:
         """Create or update ``node`` with given type and source."""
         attrs = self.graph.nodes.get(node, {})
@@ -63,12 +71,18 @@ class MetaboGraph:
         node_typ: str = "konzept",
         edge_typ: str = "relation",
         source: str | None = None,
+        edge_attrs: dict | None = None,
     ) -> None:
         """Insert ``triplets`` with node type and source information."""
         for subj, rel, obj in triplets:
             self._merge_node(subj, node_typ, source)
             self._merge_node(obj, node_typ, source)
-            self.graph.add_edge(subj, obj, relation=rel, typ=edge_typ)
+            attrs = {"relation": rel, "typ": edge_typ}
+            if source:
+                attrs["source"] = source
+            if edge_attrs:
+                attrs.update(edge_attrs)
+            self.graph.add_edge(subj, obj, **attrs)
         self.save()
 
     def add_graph(
@@ -83,6 +97,35 @@ class MetaboGraph:
             self._merge_node(node, typ, data.get("source", source))
         for u, v, data in other.edges(data=True):
             self.graph.add_edge(u, v, **data)
+        self.save()
+
+    # ------------------------------------------------------------------
+    def add_goal_transition(self, previous_goal: str, new_goal: str) -> None:
+        """Record directed edge between two goals."""
+        self.graph.add_node(previous_goal, typ="ziel")
+        self.graph.add_node(new_goal, typ="ziel")
+        if not self.graph.has_edge(previous_goal, new_goal):
+            self.graph.add_edge(
+                previous_goal,
+                new_goal,
+                relation="goal_transition",
+                typ="goal",
+            )
+            self.goal_graph.add_edge(previous_goal, new_goal)
+            self.save()
+
+    def get_goal_path(self) -> list[str]:
+        """Return ordered goal path from stored transitions."""
+        if len(self.goal_graph) == 0:
+            return []
+        try:
+            return list(nx.topological_sort(self.goal_graph))
+        except nx.NetworkXUnfeasible:
+            start = next(iter(self.goal_graph.nodes()))
+            return list(nx.dfs_preorder_nodes(self.goal_graph, start))
+
+    def _save_goal_graph(self) -> None:
+        """Compatibility stub calling :func:`save`."""
         self.save()
 
     def import_intention_graph(self, path: str | Path) -> None:
