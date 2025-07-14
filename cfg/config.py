@@ -48,6 +48,7 @@ PROMPTS = {
         "Gib eine JSON-Liste der Teilziele zurück."
     ),
     'triplet_parser_system': (
+        METABO_PROMPT + "\n" +
         "Extrahiere aus folgendem deutschen Text alle bedeutungsvollen Aussagen als "
         "Tripel (Subjekt, Prädikat, Objekt). "
         "Gib nur eine Liste von Tripeln im Format [('Subjekt', 'Prädikat', 'Objekt')] "

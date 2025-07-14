@@ -9,6 +9,8 @@ Runtime data such as logs or graphs are stored in the `data/` directory.
 The `MemoryManager` stores its entropy snapshot under
 `data/last_entropy.txt` by default. Goal and reflection texts are kept in
 `data/goal.txt` and `data/last_reflection.txt`.
+All cycle logs are written to `data/metabo_log.jsonl` and the unified
+knowledge graph persists as `data/metabograph.gml`.
 
 ## Setup
 
@@ -17,6 +19,8 @@ Install the dependencies listed in `requirements.txt`:
 ```bash
 pip install -r requirements.txt
 ```
+
+Set the `OPENAI_API_KEY` environment variable to enable LLM features.
 
 The test suite also relies on `pyyaml`, included in the requirements.
 
@@ -54,7 +58,7 @@ entropy.
 
 ### Class overview
 
-![Class Diagram](https://www.plantuml.com/plantuml/png/VLJ1Rjim3BtlAtnqiUO7UjXbBO822rQisu2U14PcRM6oQ4ZqMk_hHzbnAijEBZR1zoW-YYArXH2A0nZtIKycCXpfww0jdZnx0di01pNwCwSbFonzZuxHiI6tzz0r9-SFVBMee_V1rSRD9_w4Fxnml1Zt0gx-xdM3WJqmdLDHXVUeJPKaZmBtlnvdUJ7VRuDlPyReUN3igHkUDVayT1IOX1LtnUVAmrjvatiLEVMFgDr69APMWS7p5RoblpZ32qsHfS7gtWAZmWagwyYxHCVtpagdSd9ILcH1LQaHkOApDvr53kLih5XhQIjASD25XdW3WR7efNUdB46ruMxHrwYSTBgCdzk2X-ws2DHxZJdxrLZiWAFv9ByChK__Gs_Pt9kfqnkFQ-pu-AgaFvAsHRa77IGplhEaxe-g8YV9ByOU-rfrthXO_3P9DIQ8DOZvJQnBHobDZgMfGVLEeuyc3sNK8QL_FFv4yI0lO92J9kcJubC14YBnnMxtPJ77YJrYwKJds7AsStGrq3bXQv9NAPAPNgGRqMoHh0df57ziaWtn6RYeUhwcotfbm-GNAKte0uQ26uzGPRmaspLQkgxMjMsihdInPEN_1m00)
+![Class Diagram](https://www.plantuml.com/plantuml/png/ZLPBRzim3BxxL-ZM54ss-mv3WRKe2hJOiAq3Yc4G59jnXCcI9z5ftM7_VHJzjfDr5qScQJu-ygDo6L1vh0gJdBqz4mzbfX0oeNO8NgWiqpON7dvLsaC15iCRVCOaDIe4SQ-qxOw0Qki-rAc1LdBZbBbNLkNavdSYn2OdWImLxiKxyOb-eip3pa2AsjcPvY87bF6BrNby2zrRVB34E9N9uVFMJ1rWB4HunlFaJvzZuNmzpkaYzwgCKMyjKctqoKqKH4t11SdEeAclqsx84oTjNFu_rMp8kNTbFIyoeFCWqUlI08PLTpWVTADYXkCh0BJ9hIYetCAEtAn5F7DBsInL9gqCzLcsYQq6bmGLJiLD9XFvGPaAM5ceifDAT7ti30og0VeflWtsEssWnIEWvsui9wJlq7rbK5_flZzisob7Sgw1vID4HkyqqQS0jweCUuU37ST0hspGN5JfuQ1T5LYn5XQUP3-FtRno_esBWmwLClgbY-ygB2jaWm6Pptq7hsskRSUUh-edJWIFsZugct_qwHu8BaKzQM0iN0PnnAGxWFSwWnxFZUGk11BSwO3VTuGD_c35NiUcrfs6x5ivq2hOWaBIQ8iiiqGYsShYRa1TGCV967mL7rnm1Yd5RuL0uAPXBI87ro9KMvavszZ9r5catH5aPLFmyOZrdApav8hzjNMspcjjPKr0D54QvssiCTEPhG-ttIwA-7_JyDGxy-gfQP8aihuuLmnlfCibxyIPh224LqCGTdhTZFwNb2ZI-bwIYzlFlk2vD5JjN3FB-oX7NYC43opFsH3kzB2Vs01J3aJky6aZ8wtQOm4-1saZ_F517QvBQh2hV0hpKkvStk_Q8xNG-fHfl3DMsaPgDEqSbXhvRfDkDjXYcz6nMJZhEAuGYLh7799uDOdDvltaOXgTMJUweXQwoMMnq2vOEpSuGjTbY674a-dT5BMpAsbfCBwIXdLn9FcPSb9r1zFfV8b5So2fWrM0873lGMKpkr6qVvcDA7cajYMtaZ67v-KlcpSCNt89Del_Rlu2)
 
 ### Cycle sequence
 
