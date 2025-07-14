@@ -10,3 +10,4 @@ data/*.png
 !requirements.txt
 runMetaboMind.sh
 *.zip
+*.bak
