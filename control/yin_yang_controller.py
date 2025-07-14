@@ -137,6 +137,19 @@ class YinYangOrchestrator:
 # Shared orchestrator ---------------------------------------------------
 _ORCHESTRATOR = YinYangOrchestrator()
 
+
+def mode_hint() -> str:
+    """Return a short instruction based on the current mode."""
+    mode = _ORCHESTRATOR.mode
+    if mode == "yin":
+        return (
+            "Bitte antworte introspektiv, reflektierend und auf Verständnis "
+            "ausgerichtet."
+        )
+    return (
+        "Bitte antworte zielgerichtet, lösungsorientiert und handlungsbezogen."
+    )
+
 def decide_mode(
     context_metrics: Dict[str, float], user_input: str, subgoal_count: int = 0
 ) -> str:

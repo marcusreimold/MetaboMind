@@ -23,6 +23,8 @@ def generate_next_input(
     previous_reflection: str = "",
     model: str = MODELS['chat'],
     temperature: float = TEMPERATURES['generate_next_input'],
+    *,
+    mode_hint: str | None = None,
 ) -> str:
     """Generate a short statement that pursues ``goal`` further."""
     client = get_client(os.getenv("OPENAI_API_KEY"))
@@ -34,10 +36,13 @@ def generate_next_input(
     if reflection:
         content += f"\nLetzte Reflexion: {reflection}"
 
-    messages = [
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend([
         {"role": "system", "content": _SYSTEM_PROMPT},
         {"role": "user", "content": content},
-    ]
+    ])
 
     try:
         if hasattr(client, "chat"):

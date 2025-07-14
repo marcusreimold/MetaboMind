@@ -12,6 +12,7 @@ from logs.logger import MetaboLogger
 from parsing.triplet_pipeline import extract_triplets
 
 from reflection.reflection_engine import generate_reflection, run_llm_task
+from control.yin_yang_controller import mode_hint
 from cfg.config import PROMPTS
 
 
@@ -54,6 +55,7 @@ class CycleManager:
             last_reflection=self.memory.load_reflection(),
             triplets=triplets,
             api_key=self.api_key,
+            mode_hint=mode_hint(),
         )
 
     def run_cycle(self, text: str) -> dict:
@@ -76,6 +78,7 @@ class CycleManager:
             user_input=text,
             last_reflection=self.memory.load_reflection(),
             triplets=tuple_triplets,
+            mode_hint=mode_hint(),
         )
 
         goal_message = ""
@@ -91,6 +94,7 @@ class CycleManager:
                     old=self.current_goal, new=new_goal
                 ),
                 api_key=self.api_key,
+                mode_hint=mode_hint(),
             )
             if goal_reflection:
                 self.memory.store_reflection(goal_reflection)

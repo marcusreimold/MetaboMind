@@ -83,31 +83,40 @@ def _parse_response(content: str) -> List[Tuple[str, str, str]] | None:
     return None
 
 
-def extract_triplets_via_llm(text: str, model: str = MODELS['chat']) -> List[Tuple[str, str, str]]:
+def extract_triplets_via_llm(
+    text: str,
+    model: str = MODELS['chat'],
+    *,
+    mode_hint: str | None = None,
+) -> List[Tuple[str, str, str]]:
     """Extract semantic triples from ``text`` using an OpenAI chat model."""
     client = get_client(os.getenv("OPENAI_API_KEY"))
     if client is None:
         logger.error("No OpenAI API key provided or client unavailable")
         return []
 
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend(
+        [
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": text},
+        ]
+    )
+
     try:
         if hasattr(client, "chat"):
             response = client.chat.completions.create(
                 model=model,
                 temperature=TEMPERATURES['chat'],
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": text},
-                ],
+                messages=messages,
             )
         else:
             response = client.ChatCompletion.create(
                 model=model,
                 temperature=TEMPERATURES['chat'],
-                messages=[
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": text},
-                ],
+                messages=messages,
             )
     except Exception as exc:
         logger.error("LLM request failed: %s", exc)

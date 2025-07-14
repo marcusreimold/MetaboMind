@@ -20,6 +20,7 @@ def decompose_goal(
     *,
     model: str = MODELS['subgoal'],
     temperature: float = TEMPERATURES['subgoal'],
+    mode_hint: str | None = None,
 ) -> List[str]:
     """Return a list of subgoals decomposed from ``goal``."""
     client = get_client(os.getenv("OPENAI_API_KEY"))
@@ -30,10 +31,13 @@ def decompose_goal(
     if context:
         user_content += f"\nKontext: {context}"
 
-    messages = [
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend([
         {"role": "system", "content": _SYSTEM_PROMPT},
         {"role": "user", "content": user_content},
-    ]
+    ])
 
     try:
         if hasattr(client, "chat"):

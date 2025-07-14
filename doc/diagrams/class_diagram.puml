@@ -36,6 +36,7 @@ class YinYangOrchestrator {
   -_next_beat : datetime
   +set_mode(mode)
   +decide_mode(metrics, text, sub_done)
+  +mode_hint()
   +_contains_uncertainty(text)
 }
 class ModeDecider {

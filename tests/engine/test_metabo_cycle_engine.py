@@ -47,7 +47,7 @@ def setup(monkeypatch):
     monkeypatch.setattr(metabo_engine, "recall_context", lambda *a, **k: [])
     monkeypatch.setattr(metabo_engine, "generate_reflection", lambda **k: {"reflection": ""})
     monkeypatch.setattr(metabo_engine, "extract_triplets", lambda text, source="reflection": [])
-    monkeypatch.setattr(metabo_engine, "propose_goal", lambda ui: None)
+    monkeypatch.setattr(metabo_engine, "propose_goal", lambda ui, **kw: None)
     monkeypatch.setattr(metabo_engine, "check_goal_shift", lambda a, b: False)
     path = os.path.join(os.getcwd(), "tmp_goal.txt")
     refl = os.path.join(os.getcwd(), "tmp_ref.txt")
