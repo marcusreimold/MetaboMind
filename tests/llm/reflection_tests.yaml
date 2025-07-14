@@ -1,0 +1,58 @@
+# tests/llm/reflection_tests.yaml
+
+tests:
+  - id: reflection_basic_1
+    input: "Was denkst du über klassische Musik?"
+    expected_reflection: "Die Eingabe fordert eine Reflexion über klassische Musik, einschließlich ihrer kulturellen Bedeutung und strukturellen Merkmale."
+    expected_triplets:
+      - ["Eingabe", "fordert", "Reflexion über klassische Musik"]
+    mode: YANG
+
+  - id: reflection_basic_2
+    input: "Ich weiß nicht, was ich fragen soll..."
+    expected_reflection: "Die Eingabe signalisiert Unsicherheit oder Orientierungslosigkeit, was auf ein Bedürfnis nach introspektiver Unterstützung hindeutet."
+    expected_triplets:
+      - ["Eingabe", "signalisiert", "Unsicherheit"]
+    mode: YIN
+
+  - id: reflection_goal_shift
+    input: "Ich möchte mich lieber mit Philosophie beschäftigen."
+    expected_reflection: "Die Eingabe deutet auf eine bewusste Zielverschiebung hin – weg vom aktuellen Thema hin zur Philosophie."
+    expected_triplets:
+      - ["Nutzer", "schlägt vor", "Zieländerung auf Philosophie"]
+    mode: YANG
+
+  - id: reflection_confirmed_goal_change
+    input: "Ja, ich meine es ernst. Bitte konzentriere dich auf Philosophie."
+    expected_reflection: "Die Eingabe bestätigt den Wunsch zur Zieländerung und priorisiert nun das Thema Philosophie."
+    expected_triplets:
+      - ["Ziel", "geändert zu", "Philosophie"]
+    mode: YANG
+
+  - id: reflection_ambiguous
+    input: "Und davor?"
+    expected_reflection: "Die Eingabe ist rückbezüglich und erfordert Kontextanalyse der letzten Aussagen, um sinnvoll zu reagieren."
+    expected_triplets:
+      - ["Eingabe", "bezieht sich auf", "vorherigen Kontext"]
+    mode: YIN
+
+  - id: reflection_self_doubt
+    input: "Ich verstehe gar nichts mehr..."
+    expected_reflection: "Die Eingabe zeigt Überforderung oder Verwirrung, was eine introspektive Reaktion erfordert."
+    expected_triplets:
+      - ["Nutzer", "empfindet", "Verwirrung"]
+    mode: YIN
+
+  - id: reflection_topic_rejection
+    input: "Eigentlich interessiert mich das Thema doch nicht so sehr..."
+    expected_reflection: "Die Eingabe stellt das aktuelle Ziel infrage und leitet eine mögliche Umorientierung ein."
+    expected_triplets:
+      - ["Nutzer", "zweifelt", "aktuelles Ziel"]
+    mode: YIN
+
+  - id: reflection_neutral_comment
+    input: "Interessant."
+    expected_reflection: "Die Eingabe ist neutral und bietet keinen starken semantischen Anker für eine Ziel- oder Themenänderung."
+    expected_triplets:
+      - ["Eingabe", "ist", "neutral"]
+    mode: YANG
