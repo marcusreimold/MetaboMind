@@ -71,6 +71,7 @@ class MetaboGraph {
   +graph : MultiDiGraph
   +add_graph(graph)
   +add_triplets(triplets)
+  +import_intention_graph(path)
   +calculate_entropy()
   +snapshot()
   +save()

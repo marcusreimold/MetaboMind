@@ -54,6 +54,11 @@ a `typ` attribute like `konzept`, `intention` or `emotion` and optional
 functions allow extraction of subgraphs by type and calculation of its Shannon
 entropy.
 
+Old intention graphs stored as `intent_graph.gml` are automatically imported
+when a `MemoryManager` instance is created. Every intention node is marked with
+`typ="intention"` and `source="llm"`; the original file is archived with a
+`.bak` suffix once migration succeeded.
+
 Reflections generated during a MetaboTakt are now also parsed for symbolic
 triples. These triples are stored in the ``MetaboGraph`` and linked to the
 current goal node along with the detected emotion.
