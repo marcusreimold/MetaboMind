@@ -33,6 +33,9 @@ def setup(monkeypatch, tmp_path, goal=""):
         def store_last_entropy(self, val):
             self.ent = val
 
+        def add_metabo_insight_to_graph(self, **kwargs):
+            pass
+
     mem = DummyMem()
     monkeypatch.setattr(metabo_cycle, "get_memory_manager", lambda: mem)
     monkeypatch.setattr(metabo_cycle, "MetaboLogger", lambda *a, **k: types.SimpleNamespace(log_cycle=lambda **kw: None))

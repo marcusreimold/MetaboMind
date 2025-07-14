@@ -17,6 +17,7 @@ class MemoryManager {
   -reflection_path : Path
   -entropy_path : Path
   +store_triplets(triplets)
+  +add_metabo_insight_to_graph(user_input, triplets, goal, reflection, emotion)
   +store_reflection(reflection)
   +load_reflection()
   +save_emotion(ent_before, ent_after)

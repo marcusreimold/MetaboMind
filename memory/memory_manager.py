@@ -48,6 +48,56 @@ class MemoryManager:
         after = entropy_of_graph(self.graph.snapshot())
         return before, after
 
+    def add_metabo_insight_to_graph(
+        self,
+        user_input: str,
+        triplets: List[Tuple[str, str, str]] | None = None,
+        goal: str | None = None,
+        reflection: str | None = None,
+        emotion: dict | None = None,
+    ) -> None:
+        """Insert all insights of one cycle into the :class:`MetaboGraph`."""
+
+        if triplets:
+            try:
+                self.metabo_graph.add_triplets(triplets, node_typ="konzept", edge_typ="relation", source="llm")
+            except Exception:
+                pass
+
+        inp_node = f"eingabe:{user_input}"
+        self.metabo_graph.graph.add_node(inp_node, typ="eingabe", text=user_input)
+
+        if goal:
+            goal_node = f"ziel:{goal}"
+            self.metabo_graph.graph.add_node(goal_node, typ="ziel", text=goal)
+            self.metabo_graph.graph.add_edge(
+                inp_node,
+                goal_node,
+                relation="fuehrt_zu",
+                typ="relation",
+            )
+
+        target_node = goal_node if goal else inp_node
+
+        if reflection:
+            ref_node = f"reflexion:{datetime.utcnow().isoformat(timespec='seconds')}"
+            self.metabo_graph.graph.add_node(ref_node, typ="reflexion", text=reflection)
+            self.metabo_graph.graph.add_edge(
+                ref_node,
+                target_node,
+                relation="reflektiert_zu",
+                typ="relation",
+            )
+            if emotion:
+                self.metabo_graph.graph.nodes[ref_node]["meta"] = json.dumps(emotion)
+        elif emotion:
+            self.metabo_graph.graph.nodes[inp_node]["meta"] = json.dumps(emotion)
+
+        try:
+            self.metabo_graph.save()
+        except Exception:
+            pass
+
     # ------------------------------------------------------------------
     # Reflection persistence
 
