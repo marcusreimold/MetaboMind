@@ -22,9 +22,14 @@ class MemoryManager:
         reflection_path: str = "data/last_reflection.txt",
         entropy_path: str = "data/last_entropy.txt",
         meta_path: str = "data/metabograph.gml",
+        intent_graph_path: str | None = None,
     ) -> None:
-        self.graph = IntentionGraph(graph_path)
+        self.graph = IntentionGraph(graph_path, goal_path=intent_graph_path)
         self.metabo_graph = MetaboGraph(meta_path)
+        try:
+            self.metabo_graph.import_intention_graph(self.graph.goal_path)
+        except Exception:
+            pass
         self.emotion_log = Path(emotion_log)
         self.emotion_log.parent.mkdir(parents=True, exist_ok=True)
         self.reflection_path = Path(reflection_path)
