@@ -12,3 +12,9 @@
     delta_range: [0.05, 1.0]
     answer_contains: "Musik"
     goal_hint: "Musik"
+- input: "Bitte kurze Selbstreflexion durchführen"
+  # Ensure Yin-Modus bei introspektiver Anfrage (Regel 2 & 5)
+  expected:
+    mode: "YIN"
+    answer_contains: "Reflexion"
+    goal_hint: null

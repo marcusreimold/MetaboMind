@@ -2,37 +2,85 @@
 '/' Updated after adding requirements.txt
 class Main
 class MetaboCycle
-class GoalManager
-class MemoryManager
-class IntentionGraph
+class GoalManager {
+  -goal_path : Path
+  -reflection_path : Path
+  +get_goal()
+  +set_goal(goal)
+  +load_reflection()
+  +save_reflection(text)
+}
+class MemoryManager {
+  +graph : IntentionGraph
+  +metabo_graph : MetaboGraph
+  -emotion_log : Path
+  -reflection_path : Path
+  -entropy_path : Path
+  +store_triplets(triplets)
+  +store_reflection(reflection)
+  +load_reflection()
+  +save_emotion(ent_before, ent_after)
+  +calculate_entropy()
+  +load_last_entropy()
+  +store_last_entropy(value)
+  +map_entropy_to_emotion(delta)
+}
+class IntentionGraph {
+  +filepath : str
+  +goal_path : Path
+  +graph : MultiDiGraph
+  +goal_graph : DiGraph
+  +load_graph()
+  +save_graph()
+  +add_triplets(triplets)
+  +snapshot()
+  +add_goal_transition(previous_goal, new_goal)
+  +get_goal_path()
+  +visualize_graph(output_path)
+}
 class ReflectionEngine
 class TaktEngine
-class YinYangOrchestrator
-class ModeDecider
+class YinYangOrchestrator {
+  +mode
+  -_override : str
+  -_deltas : List[float]
+  -_history : List[str]
+  -_heartbeat : int
+  -_next_beat : datetime
+  +set_mode(mode)
+  +decide_mode(metrics, text, sub_done)
+  +_contains_uncertainty(text)
+}
+class ModeDecider {
+  +decide_yin_yang_mode(text, metrics)
+}
 class MetaboGUI
-class GraphViewer
-class GraphEntropyScorer
-class MetaboGraph
-GraphViewer : +draw()
-GraphViewer : +_on_zoom()
-GraphViewer : +_on_drag_start()
-GraphViewer : +_on_drag_move()
-GraphEntropyScorer : +calculate_entropy(graph)
-GraphEntropyScorer : +explain_entropy(graph)
-MetaboGraph : +add_graph(graph)
-MetaboGraph : +add_triplets(triplets)
-MetaboGraph : +calculate_entropy()
-MetaboGraph : +snapshot()
-MetaboGraph : +save()
-MetaboGraph : -_load()
-MetaboGraph : -_merge_node(node, typ, source)
-MetaboGraph : filepath : Path
-MetaboGraph : graph : MultiDiGraph
-YinYangOrchestrator : +decide_mode(metrics, text, sub_done)
-YinYangOrchestrator : +debug_print()
-YinYangOrchestrator : _history : List
-YinYangOrchestrator : +_contains_uncertainty(text)
-ModeDecider : +decide_yin_yang_mode(text, metrics)
+class GraphViewer {
+  +draw()
+  +_on_zoom()
+  +_on_drag_start()
+  +_on_drag_move()
+}
+class GraphEntropyScorer {
+  +calculate_entropy(graph)
+  +explain_entropy(graph)
+}
+class MetaboGraph {
+  +filepath : Path
+  +graph : MultiDiGraph
+  +add_graph(graph)
+  +add_triplets(triplets)
+  +calculate_entropy()
+  +snapshot()
+  +save()
+  -_load()
+  -_merge_node(node, typ, source)
+}
+class MetaboLogger {
+  +filepath : Path
+  +log_cycle(input_text, reflection, triplets, ent_before, ent_after, emotion, intensity)
+}
+
 Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
@@ -49,4 +97,5 @@ MetaboGUI --> TaktEngine : uses thread
 MetaboGUI --> GraphViewer
 MemoryManager --> GraphEntropyScorer
 GraphViewer --> MetaboGraph
+MetaboCycle --> MetaboLogger
 @enduml
