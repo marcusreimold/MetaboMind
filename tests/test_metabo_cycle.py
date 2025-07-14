@@ -59,7 +59,7 @@ def setup(monkeypatch, tmp_path, goal=""):
 
 def test_goal_switch(monkeypatch, tmp_path):
     setup(monkeypatch, tmp_path, goal="Alt")
-    monkeypatch.setattr(metabo_cycle, "propose_goal", lambda ui: "Neu")
+    monkeypatch.setattr(metabo_cycle, "propose_goal", lambda ui, **kw: "Neu")
     monkeypatch.setattr(metabo_cycle, "check_goal_shift", lambda a, b: True)
     res = metabo_cycle.run_metabo_cycle("User input", source_type="user")
     assert res["goal"] == "Neu"

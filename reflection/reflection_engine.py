@@ -16,13 +16,20 @@ from cfg.config import PROMPTS, MODELS, TEMPERATURES
 logger = logging.getLogger(__name__)
 
 
-def run_llm_task(prompt: str, api_key: str | None = None) -> str:
+def run_llm_task(
+    prompt: str,
+    api_key: str | None = None,
+    mode_hint: str | None = None,
+) -> str:
     """Execute a simple LLM chat completion and return the text."""
     client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
     if client is None:
         return ""
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.append({"role": "user", "content": prompt})
 
     try:
         if hasattr(client, "chat"):
@@ -48,6 +55,8 @@ def detect_goal_shift(
     api_key: str | None = None,
     previous_user_inputs: list[str] | None = None,
     last_system_output: str = "",
+    *,
+    mode_hint: str | None = None,
 ) -> tuple[bool, Optional[str]]:
     """Return ``(change_goal, new_goal)`` based on conversation context."""
     client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
@@ -82,10 +91,13 @@ def detect_goal_shift(
         }
     ]
 
-    messages = [
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend([
         {"role": "system", "content": system},
         {"role": "user", "content": user},
-    ]
+    ])
 
     try:
         if hasattr(client, "chat"):
@@ -129,6 +141,8 @@ def generate_reflection(
     api_key: str | None = None,
     previous_user_inputs: list[str] | None = None,
     last_system_output: str = "",
+    *,
+    mode_hint: str | None = None,
 ) -> Dict[str, object]:
     """Generate a short reflection addressing the user input and goal."""
 
@@ -149,6 +163,7 @@ def generate_reflection(
         api_key=api_key,
         previous_user_inputs=previous_user_inputs,
         last_system_output=last_system_output,
+        mode_hint=mode_hint,
     )
     goal_update_msg = ""
     memory = get_memory_manager()
@@ -163,6 +178,7 @@ def generate_reflection(
         goal_update_msg = run_llm_task(
             PROMPTS['goal_shift_reflection'].format(old=goal, new=proposed),
             api_key=api_key,
+            mode_hint=mode_hint,
         )
         goal = proposed
 
@@ -176,10 +192,15 @@ def generate_reflection(
     if facts:
         user_content += f"\nTripel: {facts}"
 
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_content},
-    ]
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend(
+        [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_content},
+        ]
+    )
 
     if hasattr(client, "chat"):
         response = client.chat.completions.create(

@@ -18,6 +18,8 @@ def decide_yin_yang_mode(
     user_input: str,
     metrics: Dict[str, float],
     api_key: str | None = None,
+    *,
+    mode_hint: str | None = None,
 ) -> Optional[Dict[str, str]]:
     """Return an LLM decision for Yin or Yang.
 
@@ -41,10 +43,15 @@ def decide_yin_yang_mode(
         return None
 
     content = f"Eingabe: {user_input}\nMetriken: {json.dumps(metrics)}"
-    messages = [
-        {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": content},
-    ]
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend(
+        [
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": content},
+        ]
+    )
     functions = [
         {
             "name": "decide_yin_yang_mode",

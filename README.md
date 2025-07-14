@@ -30,6 +30,10 @@ All prompts used for LLM interactions are defined centrally in `cfg/config.py`.
 The Metabo rules are stored in `METABO_PROMPT` and automatically prefixed to
 each system prompt.
 
+Every request now includes a `mode_hint` that reflects the active Yin or Yang
+mode. In Yin, the LLM is asked to respond "introspektiv, reflektierend" while in
+Yang the instruction is "zielgerichtet, handlungsbezogen".
+
 Yin and Yang are primarily selected by an LLM via the function
 `decide_yin_yang_mode(user_input, metrics)`.  The metrics include the current
 entropy delta and a rough emotion estimate.  The orchestrator keeps a simple

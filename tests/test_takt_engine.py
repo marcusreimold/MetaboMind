@@ -61,7 +61,7 @@ def setup(monkeypatch, change_goal=False):
             super().__init__(path=path, reflection_path=refl)
     monkeypatch.setattr(metabo_engine, "GoalManager", DummyGM)
     DummyGM().set_goal("A")
-    monkeypatch.setattr(metabo_engine, "propose_goal", lambda ui: None)
+    monkeypatch.setattr(metabo_engine, "propose_goal", lambda ui, **kw: None)
     monkeypatch.setattr(metabo_engine, "check_goal_shift", lambda a, b: False)
     monkeypatch.setattr(metabo_engine, "is_new_topic", lambda u, g: False)
     monkeypatch.setattr(metabo_engine, "run_llm_task", lambda *a, **k: "ref")

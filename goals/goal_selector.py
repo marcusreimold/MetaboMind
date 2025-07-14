@@ -31,16 +31,26 @@ def _build_client(api_key: str | None):
     return openai
 
 
-def propose_goal(user_input: str, api_key: str | None = None) -> Optional[str]:
+def propose_goal(
+    user_input: str,
+    api_key: str | None = None,
+    *,
+    mode_hint: str | None = None,
+) -> Optional[str]:
     """Ask the LLM to suggest a new goal based on ``user_input``."""
     client = _build_client(api_key or os.getenv("OPENAI_API_KEY"))
     if client is None:
         return None
 
-    messages = [
-        {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": user_input},
-    ]
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend(
+        [
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": user_input},
+        ]
+    )
     functions = [
         {
             "name": "propose_goal",

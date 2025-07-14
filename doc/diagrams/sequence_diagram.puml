@@ -17,7 +17,7 @@ MetaboCycle -> GoalManager: get_goal()
 MetaboCycle -> MemoryManager: snapshot()
 MetaboCycle -> GraphEntropyScorer: calculate_entropy()
 GraphEntropyScorer --> MetaboCycle: score
-MetaboCycle -> ReflectionEngine: generate_reflection()
+MetaboCycle -> ReflectionEngine: generate_reflection(mode_hint)
 MetaboCycle -> MemoryManager: add_metabo_insight_to_graph()
 MemoryManager -> MetaboGraph: add_triplets()
 MetaboGraph -> MetaboGraph: save()

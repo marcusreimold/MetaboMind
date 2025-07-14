@@ -19,7 +19,7 @@ def test_goal_switch(monkeypatch):
     setup_common(monkeypatch, cm)
     monkeypatch.setattr(
         "control.cycle_manager.goal_engine.update_goal",
-        lambda user_input, last_reflection, triplets: "Neu",
+        lambda user_input, last_reflection, triplets, **kw: "Neu",
     )
     cm.current_goal = "Alt"
     res = cm.run_cycle("irgendwas")

@@ -15,7 +15,11 @@ from reasoning.emotion import interpret_emotion
 from reasoning.entropy_analyzer import entropy_of_graph
 from goals.subgoal_planner import decompose_goal
 from goals.subgoal_executor import execute_first_subgoal
-from control.yin_yang_controller import decide_mode, current_mode
+from control.yin_yang_controller import (
+    decide_mode,
+    current_mode,
+    mode_hint,
+)
 from control.mode_decider import decide_yin_yang_mode
 from goals import goal_engine
 from cfg.config import PROMPTS
@@ -44,11 +48,12 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
         sub_done = 0
 
     mode = current_mode()
+    mode_instruction = mode_hint()
 
     goal = goal_mgr.get_goal()
     last_reflection = goal_mgr.load_reflection()
 
-    proposed = propose_goal(source)
+    proposed = propose_goal(source, mode_hint=mode_instruction)
     new_goal = None
     if not proposed and is_new_topic(source, goal):
         proposed = source.strip()
@@ -65,7 +70,7 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
         goal = proposed
 
     try:
-        subgoals = decompose_goal(goal, last_reflection)
+        subgoals = decompose_goal(goal, last_reflection, mode_hint=mode_instruction)
     except Exception as exc:
         logger.warning("subgoal planning failed: %s", exc)
         subgoals = [goal]
@@ -96,6 +101,7 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
                 goal=goal,
                 last_reflection=last_reflection,
                 triplets=fact_triplets,
+                mode_hint=mode_instruction,
             )
             reflection_text = reflection_data.get("reflection", "")
         except Exception as exc:
@@ -201,7 +207,11 @@ def metabo_tick(api_key: str | None = None) -> Dict[str, object]:
     emotion = memory.map_entropy_to_emotion(delta)
 
     prompt = PROMPTS['takt_reflection'].format(goal=current_goal, delta=delta)
-    base_reflection = run_llm_task(prompt, api_key=api_key)
+    base_reflection = run_llm_task(
+        prompt,
+        api_key=api_key,
+        mode_hint=mode_hint(),
+    )
 
     result = run_metabo_cycle(base_reflection, source_type="system")
 

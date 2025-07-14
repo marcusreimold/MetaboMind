@@ -44,7 +44,7 @@ def setup_env(monkeypatch, tmp_path):
 # ---------------------------------------------------------------------------
 # Dummy LLM behaviour
 
-def dummy_propose_goal(user_input, api_key=None):
+def dummy_propose_goal(user_input, api_key=None, **kwargs):
     if "klassischer Musik" in user_input:
         return "klassische Musik"
     return None

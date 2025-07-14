@@ -18,16 +18,26 @@ _SYSTEM_PROMPT = PROMPTS['goal_updater_system']
 # ---------------------------------------------------------------------------
 # Goal proposal and shift utilities
 
-def propose_goal(user_input: str, api_key: str | None = None) -> Optional[str]:
+def propose_goal(
+    user_input: str,
+    api_key: str | None = None,
+    *,
+    mode_hint: str | None = None,
+) -> Optional[str]:
     """Ask the LLM to propose a new goal based on ``user_input``."""
     client = get_client(api_key or os.getenv("OPENAI_API_KEY"))
     if client is None:
         return None
 
-    messages = [
-        {"role": "system", "content": PROMPTS['propose_goal_system']},
-        {"role": "user", "content": user_input},
-    ]
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend(
+        [
+            {"role": "system", "content": PROMPTS['propose_goal_system']},
+            {"role": "user", "content": user_input},
+        ]
+    )
     functions = [
         {
             "name": "propose_goal",
@@ -146,6 +156,8 @@ def update_goal(
     last_goal: str,
     last_reflection: str,
     triplets: List[Tuple[str, str, str]],
+    *,
+    mode_hint: str | None = None,
 ) -> str:
     """Return a new goal if the focus changed, otherwise ``last_goal``."""
 
@@ -153,7 +165,7 @@ def update_goal(
     if explicit and check_goal_shift(last_goal, explicit):
         return explicit
 
-    proposed = propose_goal(user_input)
+    proposed = propose_goal(user_input, mode_hint=mode_hint)
     if proposed and check_goal_shift(last_goal, proposed):
         return proposed
 
@@ -170,10 +182,15 @@ def update_goal(
     if facts:
         user_content += f"\nTripel: {facts}"
 
-    messages = [
-        {"role": "system", "content": _SYSTEM_PROMPT},
-        {"role": "user", "content": user_content},
-    ]
+    messages = []
+    if mode_hint:
+        messages.append({"role": "system", "content": mode_hint})
+    messages.extend(
+        [
+            {"role": "system", "content": _SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
+        ]
+    )
 
     try:
         if hasattr(client, "chat"):
