@@ -49,6 +49,7 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
     last_reflection = goal_mgr.load_reflection()
 
     proposed = propose_goal(user_input)
+    new_goal = None
     if not proposed and is_new_topic(user_input, goal):
         proposed = user_input.strip()
 
@@ -59,6 +60,7 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
             memory.graph.goal_graph.add_node(proposed)
             memory.graph._save_goal_graph()
         goal_mgr.set_goal(proposed)
+        new_goal = proposed
         logger.info("Neues Ziel erkannt: %s -> %s", goal, proposed)
         goal = proposed
 
@@ -151,6 +153,17 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         memory.store_last_entropy(entropy_after)
     except Exception as exc:
         logger.warning("storing entropy failed: %s", exc)
+
+    try:
+        memory.add_metabo_insight_to_graph(
+            user_input=user_input,
+            triplets=triplets,
+            goal=new_goal,
+            reflection=reflection_text,
+            emotion={"emotion": emotion["emotion"], "delta": emotion["delta"]},
+        )
+    except Exception as exc:
+        logger.warning("metabograph update failed: %s", exc)
 
     return {
         "goal": goal,

@@ -59,13 +59,14 @@ class MetaboGraph:
         self,
         triplets: Iterable[Tuple[str, str, str]],
         node_typ: str = "konzept",
+        edge_typ: str = "relation",
         source: str | None = None,
     ) -> None:
         """Insert ``triplets`` with node type and source information."""
         for subj, rel, obj in triplets:
             self._merge_node(subj, node_typ, source)
             self._merge_node(obj, node_typ, source)
-            self.graph.add_edge(subj, obj, relation=rel)
+            self.graph.add_edge(subj, obj, relation=rel, typ=edge_typ)
         self.save()
 
     def add_graph(
