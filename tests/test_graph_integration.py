@@ -21,7 +21,6 @@ def setup_env(monkeypatch, tmp_path):
     monkeypatch.setattr(llm_client, "get_client", lambda *a, **k: None)
 
     mgr = memory_manager.MemoryManager(
-        graph_path=str(tmp_path / "graph.gml"),
         emotion_log=str(tmp_path / "emo.jsonl"),
         reflection_path=str(tmp_path / "last_reflection.txt"),
         entropy_path=str(tmp_path / "last_entropy.txt"),
@@ -67,7 +66,15 @@ def dummy_generate_reflection(last_user_input, goal, last_reflection, triplets=N
 
 def dummy_extract_triplets(text, model=None):
     if "K\u00fcnstliche Intelligenz" in text:
-        return [("K\u00fcnstliche Intelligenz", "ver\u00e4ndert", "Arbeitswelt")]
+        return [
+            {
+                "subject": "K\u00fcnstliche Intelligenz",
+                "predicate": "ver\u00e4ndert",
+                "object": "Arbeitswelt",
+                "source": "reflection",
+                "timestamp": "t",
+            }
+        ]
     return []
 
 
@@ -130,7 +137,7 @@ def test_graph_integration(monkeypatch, tmp_path):
     monkeypatch.setattr(metabo_cycle, "load_context", lambda g, goal: [])
     monkeypatch.setattr(metabo_cycle, "recall_context", lambda *a, **k: [])
     monkeypatch.setattr(metabo_cycle, "generate_reflection", dummy_generate_reflection)
-    monkeypatch.setattr(metabo_cycle, "extract_triplets_via_llm", dummy_extract_triplets)
+    monkeypatch.setattr(metabo_cycle, "extract_triplets", lambda text, source="reflection": dummy_extract_triplets(text))
     monkeypatch.setattr(metabo_cycle, "decide_mode", lambda *a, **k: "yang")
     monkeypatch.setattr(metabo_cycle, "decide_yin_yang_mode", lambda *a, **k: {})
 

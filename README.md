@@ -53,11 +53,9 @@ a `typ` attribute like `konzept`, `intention` or `emotion` and optional
 `source` metadata. The graph is persisted as `data/metabograph.gml` and helper
 functions allow extraction of subgraphs by type and calculation of its Shannon
 entropy.
-
-Old intention graphs stored as `intent_graph.gml` are automatically imported
-when a `MemoryManager` instance is created. Every intention node is marked with
-`typ="intention"` and `source="llm"`; the original file is archived with a
-`.bak` suffix once migration succeeded.
+All triplet extraction now flows through `parsing/triplet_pipeline.py`. The
+pipeline deduplicates triples, annotates them with a timestamp and source and
+stores them directly in `metabograph.gml`.
 
 Reflections generated during a MetaboTakt are now also parsed for symbolic
 triples. These triples are stored in the ``MetaboGraph`` and linked to the

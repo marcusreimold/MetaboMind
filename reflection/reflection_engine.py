@@ -8,8 +8,8 @@ from datetime import datetime
 from utils.llm_client import get_client
 from goals import goal_manager
 from memory.memory_manager import get_memory_manager
-from memory.graph_manager import get_graph_manager, GraphManager
 from parsing import triplet_extractor
+from parsing.triplet_pipeline import extract_triplets, add_triplets_to_graph
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 
@@ -155,10 +155,10 @@ def generate_reflection(
     if changed and proposed and proposed.strip() and proposed != goal:
         logger.info("Neues Ziel erkannt: %s -> %s", goal, proposed)
         if goal:
-            memory.graph.add_goal_transition(goal, proposed)
+            memory.metabo_graph.add_goal_transition(goal, proposed)
         else:
-            memory.graph.goal_graph.add_node(proposed)
-            memory.graph._save_goal_graph()
+            memory.metabo_graph.goal_graph.add_node(proposed)
+            memory.metabo_graph._save_goal_graph()
         goal_manager.set_goal(proposed)
         goal_update_msg = run_llm_task(
             PROMPTS['goal_shift_reflection'].format(old=goal, new=proposed),
@@ -207,9 +207,8 @@ def store_reflection_triplets(
     reflection: str,
     goal: str,
     emotion: dict | None = None,
-    manager: GraphManager | None = None,
 ) -> List[Tuple[str, str, str]]:
-    """Extract triplets from ``reflection`` and persist them via ``GraphManager``.
+    """Extract triplets from ``reflection`` and persist them in the MetaboGraph.
 
     Parameters
     ----------
@@ -219,32 +218,29 @@ def store_reflection_triplets(
         Currently active goal used to connect the reflection node.
     emotion:
         Optional emotion metadata to store with the reflection node.
-    manager:
-        Optional preconfigured :class:`GraphManager` instance.
-
     Returns
     -------
     List[Tuple[str, str, str]]
         Triplets extracted from the reflection.
     """
 
-    manager = manager or get_graph_manager()
-    triples = triplet_extractor.extract(reflection)
+    triples = extract_triplets(reflection, source="reflection")
     if not triples:
         return []
 
-    manager.add_triplets(triples, source="reflection")
+    mem = get_memory_manager()
+    add_triplets_to_graph(triples, mg=mem.metabo_graph)
 
     ref_node = f"reflexion:{datetime.utcnow().isoformat(timespec='seconds')}"
-    manager.graph.add_node(ref_node, typ="reflexion", text=reflection)
+    mem.metabo_graph.graph.add_node(ref_node, typ="reflexion", text=reflection)
 
     if goal:
         goal_node = f"ziel:{goal}"
-        manager.graph.add_node(goal_node, typ="ziel", text=goal)
-        manager.graph.add_edge(ref_node, goal_node, relation="reflektiert_zu", typ="relation")
+        mem.metabo_graph.graph.add_node(goal_node, typ="ziel", text=goal)
+        mem.metabo_graph.graph.add_edge(ref_node, goal_node, relation="reflektiert_zu", typ="relation")
 
     if emotion:
-        manager.graph.nodes[ref_node]["meta"] = json.dumps(emotion)
+        mem.metabo_graph.graph.nodes[ref_node]["meta"] = json.dumps(emotion)
 
-    manager.save_graph()
-    return triples
+    mem.metabo_graph.save()
+    return [(t["subject"], t["predicate"], t["object"]) for t in triples]

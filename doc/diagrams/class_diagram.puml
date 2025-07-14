@@ -11,7 +11,6 @@ class GoalManager {
   +save_reflection(text)
 }
 class MemoryManager {
-  +graph : IntentionGraph
   +metabo_graph : MetaboGraph
   -emotion_log : Path
   -reflection_path : Path
@@ -25,19 +24,6 @@ class MemoryManager {
   +load_last_entropy()
   +store_last_entropy(value)
   +map_entropy_to_emotion(delta)
-}
-class IntentionGraph {
-  +filepath : str
-  +goal_path : Path
-  +graph : MultiDiGraph
-  +goal_graph : DiGraph
-  +load_graph()
-  +save_graph()
-  +add_triplets(triplets)
-  +snapshot()
-  +add_goal_transition(previous_goal, new_goal)
-  +get_goal_path()
-  +visualize_graph(output_path)
 }
 class ReflectionEngine
 class TaktEngine
@@ -78,13 +64,6 @@ class MetaboGraph {
   -_load()
   -_merge_node(node, typ, source)
 }
-class GraphManager {
-  +intention_graph : IntentionGraph
-  +metabo_graph : MetaboGraph
-  +add_triplets(triplets, node_typ, edge_typ, source)
-  +save_graph()
-  +snapshot()
-}
 class MetaboLogger {
   +filepath : Path
   +log_cycle(input_text, reflection, triplets, ent_before, ent_after, emotion, intensity)
@@ -94,10 +73,8 @@ Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
 MetaboCycle --> ReflectionEngine
-ReflectionEngine --> GraphManager
 MetaboCycle --> YinYangOrchestrator
 MetaboCycle --> ModeDecider
-MemoryManager --> IntentionGraph
 MemoryManager --> MetaboGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager

@@ -10,7 +10,8 @@ def test_recall_context_global(monkeypatch):
 
     class DummyMem:
         def __init__(self):
-            self.graph = types.SimpleNamespace(graph=G)
+            self.metabo_graph = types.SimpleNamespace(graph=G)
+            self.graph = self.metabo_graph
 
     monkeypatch.setattr(recall_context, "get_memory_manager", lambda: DummyMem())
     res = recall_context.recall_context(limit=2)
@@ -29,7 +30,8 @@ def test_recall_context_goal(monkeypatch):
 
     class DummyMem:
         def __init__(self):
-            self.graph = types.SimpleNamespace(graph=G)
+            self.metabo_graph = types.SimpleNamespace(graph=G)
+            self.graph = self.metabo_graph
 
     monkeypatch.setattr(recall_context, "get_memory_manager", lambda: DummyMem())
     monkeypatch.setattr(recall_context, "get_active_goal", lambda: "goal")

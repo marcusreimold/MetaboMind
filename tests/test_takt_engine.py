@@ -27,6 +27,7 @@ class DummyMem:
                 return []
 
         self.graph = DummyGraph()
+        self.metabo_graph = self.graph
 
     def calculate_entropy(self):
         return 0.4

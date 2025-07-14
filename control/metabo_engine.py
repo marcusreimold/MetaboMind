@@ -7,7 +7,7 @@ from goals.goal_manager import GoalManager
 from goals.goal_updater import propose_goal, check_goal_shift
 from memory.memory_manager import get_memory_manager
 from memory.context_selector import load_context
-from parsing.triplet_parser_llm import extract_triplets_via_llm
+from parsing.triplet_pipeline import extract_triplets, add_triplets_to_graph
 from memory.recall_context import recall_context
 from reflection.reflection_engine import generate_reflection, run_llm_task
 from logs.logger import MetaboLogger
@@ -38,7 +38,7 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
     log = MetaboLogger()
 
     try:
-        path = memory.graph.get_goal_path()
+        path = memory.metabo_graph.get_goal_path()
         sub_done = max(len(path) - 1, 0)
     except Exception:
         sub_done = 0
@@ -55,10 +55,10 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
 
     if proposed and check_goal_shift(goal, proposed):
         if goal:
-            memory.graph.add_goal_transition(goal, proposed)
+            memory.metabo_graph.add_goal_transition(goal, proposed)
         else:
-            memory.graph.goal_graph.add_node(proposed)
-            memory.graph._save_goal_graph()
+            memory.metabo_graph.goal_graph.add_node(proposed)
+            memory.metabo_graph._save_goal_graph()
         goal_mgr.set_goal(proposed)
         new_goal = proposed
         logger.info("Neues Ziel erkannt: %s -> %s", goal, proposed)
@@ -71,11 +71,11 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
         subgoals = [goal]
     goal = execute_first_subgoal(goal, subgoals)
 
-    graph_snapshot = memory.graph.snapshot()
+    graph_snapshot = memory.metabo_graph.snapshot()
     entropy_before = entropy_of_graph(graph_snapshot)
 
     try:
-        context_nodes = load_context(memory.graph.graph, goal)
+        context_nodes = load_context(memory.metabo_graph.graph, goal)
     except Exception as exc:
         logger.warning("context selection failed: %s", exc)
         context_nodes = []
@@ -104,18 +104,22 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
             reflection_data = {"reflection": "", "triplets": [], "explanation": ""}
 
         try:
-            triplets = extract_triplets_via_llm(reflection_text)
+            triplets = extract_triplets(reflection_text, source="reflection")
+            tuple_triplets = [
+                (t["subject"], t["predicate"], t["object"]) for t in triplets
+            ]
         except Exception as exc:
             logger.warning("triplet extraction failed: %s", exc)
             triplets = []
+            tuple_triplets = []
 
         if triplets:
             try:
-                memory.graph.add_triplets(triplets)
+                add_triplets_to_graph(triplets, mg=memory.metabo_graph)
             except Exception as exc:
                 logger.warning("graph update failed: %s", exc)
 
-        entropy_after = entropy_of_graph(memory.graph.snapshot())
+        entropy_after = entropy_of_graph(memory.metabo_graph.snapshot())
         emotion = interpret_emotion(entropy_before, entropy_after)
     else:
         reflection_text = last_reflection
@@ -155,7 +159,7 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
     try:
         memory.add_metabo_insight_to_graph(
             user_input=source,
-            triplets=triplets,
+            triplets=tuple_triplets,
             goal=new_goal,
             reflection=reflection_text,
             emotion={"emotion": emotion["emotion"], "delta": emotion["delta"]},

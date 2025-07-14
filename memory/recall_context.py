@@ -19,7 +19,7 @@ def _edges_to_dicts(edges: List[tuple]) -> List[Dict[str, str]]:
 
 
 def recall_context(limit: int = 10, scope: str = "global") -> List[Dict[str, str]]:
-    """Return up to ``limit`` facts from the IntentionGraph.
+    """Return up to ``limit`` facts from the MetaboGraph.
 
     Parameters
     ----------
@@ -30,7 +30,7 @@ def recall_context(limit: int = 10, scope: str = "global") -> List[Dict[str, str
         value returns a global selection of edges ordered by node degree.
     """
 
-    G: nx.MultiDiGraph = get_memory_manager().graph.graph
+    G: nx.MultiDiGraph = get_memory_manager().metabo_graph.graph
 
     edges: List[tuple] = []
     if scope == "goal":
