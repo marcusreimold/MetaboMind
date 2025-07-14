@@ -25,6 +25,7 @@ class MetaboGraph:
                 if not isinstance(g, nx.MultiDiGraph):
                     g = nx.MultiDiGraph(g)
                 self.graph = g
+                print(f"[MetaboGraph] Lade bestehenden Graph aus {self.filepath}")
                 return
             except Exception:
                 pass
@@ -34,6 +35,7 @@ class MetaboGraph:
         """Persist graph to ``filepath``."""
         try:
             nx.write_gml(self.graph, self.filepath)
+            print(f"[MetaboGraph] gespeichert nach {self.filepath}")
         except Exception:
             pass
 
