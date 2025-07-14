@@ -2,7 +2,6 @@ secrets/
 **/__pycache__
 data/graph.gml
 data/metabo_log.jsonl
-data/intent_graph.gml
 data/metabograph.gml
 data/emotions.jsonl
 data/*.png

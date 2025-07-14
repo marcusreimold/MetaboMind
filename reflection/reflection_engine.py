@@ -8,8 +8,7 @@ from datetime import datetime
 from utils.llm_client import get_client
 from goals import goal_manager
 from memory.memory_manager import get_memory_manager
-from parsing import triplet_extractor
-from parsing.triplet_pipeline import extract_triplets, add_triplets_to_graph
+from utils.graph_utils import process_triples
 from cfg.config import PROMPTS, MODELS, TEMPERATURES
 
 
@@ -245,12 +244,11 @@ def store_reflection_triplets(
         Triplets extracted from the reflection.
     """
 
-    triples = extract_triplets(reflection, source="reflection")
+    triples = process_triples(reflection, source="reflection")
     if not triples:
         return []
 
     mem = get_memory_manager()
-    add_triplets_to_graph(triples, mg=mem.metabo_graph)
 
     ref_node = f"reflexion:{datetime.utcnow().isoformat(timespec='seconds')}"
     mem.metabo_graph.graph.add_node(ref_node, typ="reflexion", text=reflection)

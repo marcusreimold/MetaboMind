@@ -7,7 +7,7 @@ from goals.goal_manager import GoalManager
 from goals.goal_updater import propose_goal, check_goal_shift
 from memory.memory_manager import get_memory_manager
 from memory.context_selector import load_context
-from parsing.triplet_pipeline import extract_triplets, add_triplets_to_graph
+from utils.graph_utils import process_triples
 from memory.recall_context import recall_context
 from reflection.reflection_engine import generate_reflection, run_llm_task
 from logs.logger import MetaboLogger
@@ -110,20 +110,11 @@ def run_metabo_cycle(source: str, source_type: Literal["user", "system"] = "user
             reflection_data = {"reflection": "", "triplets": [], "explanation": ""}
 
         try:
-            triplets = extract_triplets(reflection_text, source="reflection")
-            tuple_triplets = [
-                (t["subject"], t["predicate"], t["object"]) for t in triplets
-            ]
+            tuple_triplets = process_triples(reflection_text, source="reflection")
         except Exception as exc:
-            logger.warning("triplet extraction failed: %s", exc)
-            triplets = []
+            logger.warning("triplet processing failed: %s", exc)
             tuple_triplets = []
-
-        if triplets:
-            try:
-                add_triplets_to_graph(triplets, mg=memory.metabo_graph)
-            except Exception as exc:
-                logger.warning("graph update failed: %s", exc)
+        triplets = tuple_triplets
 
         entropy_after = entropy_of_graph(memory.metabo_graph.snapshot())
         emotion = interpret_emotion(entropy_before, entropy_after)
@@ -201,12 +192,7 @@ def metabo_tick(api_key: str | None = None) -> Dict[str, object]:
 
     last_entropy = memory.load_last_entropy()
     current_entropy = memory.calculate_entropy()
-    delta = current_entropy - last_entropy
-    memory.store_last_entropy(current_entropy)
-
-    emotion = memory.map_entropy_to_emotion(delta)
-
-    prompt = PROMPTS['takt_reflection'].format(goal=current_goal, delta=delta)
+    prompt = PROMPTS['takt_reflection'].format(goal=current_goal, delta=current_entropy - last_entropy)
     base_reflection = run_llm_task(
         prompt,
         api_key=api_key,
@@ -214,6 +200,11 @@ def metabo_tick(api_key: str | None = None) -> Dict[str, object]:
     )
 
     result = run_metabo_cycle(base_reflection, source_type="system")
+
+    new_entropy = memory.calculate_entropy()
+    delta = new_entropy - current_entropy
+    memory.store_last_entropy(new_entropy)
+    emotion = memory.map_entropy_to_emotion(delta)
 
     goal_update = ""
     if result["goal"] != current_goal:

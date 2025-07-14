@@ -128,45 +128,6 @@ class MetaboGraph:
         """Compatibility stub calling :func:`save`."""
         self.save()
 
-    def import_intention_graph(self, path: str | Path) -> None:
-        """Migrate nodes and edges from an existing intention graph."""
-        p = Path(path)
-        if not p.exists():
-            return
-
-        try:
-            g = nx.read_gml(p)
-            if not isinstance(g, nx.MultiDiGraph):
-                g = nx.MultiDiGraph(g)
-        except Exception:
-            return
-
-        for node, data in g.nodes(data=True):
-            self._merge_node(node, "intention", "llm")
-            mode = data.get("mode")
-            if mode:
-                self.graph.nodes[node]["mode"] = mode
-
-        for u, v, data in g.edges(data=True):
-            rel = data.get("relation")
-            exists = False
-            edata = self.graph.get_edge_data(u, v) or {}
-            for d in edata.values() if isinstance(edata, dict) else [edata]:
-                if rel is None or d.get("relation") == rel:
-                    exists = True
-                    break
-            if not exists:
-                attrs = dict(data)
-                attrs.setdefault("relation", rel or "")
-                attrs.setdefault("typ", "relation")
-                self.graph.add_edge(u, v, **attrs)
-
-        self.save()
-        backup = p.with_suffix(p.suffix + ".bak")
-        try:
-            p.rename(backup)
-        except Exception:
-            pass
 
     # ------------------------------------------------------------------
     def snapshot(self) -> nx.MultiDiGraph:

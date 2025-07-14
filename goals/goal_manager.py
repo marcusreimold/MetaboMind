@@ -24,8 +24,19 @@ class GoalManager:
             return ""
 
     def set_goal(self, goal: str) -> None:
-        """Persist ``goal`` for later retrieval."""
+        """Persist ``goal`` and mark it in the MetaboGraph."""
         self.goal_path.write_text(goal, encoding="utf-8")
+        try:
+            from memory.memory_manager import get_memory_manager
+
+            mem = get_memory_manager()
+            node = f"ziel:{goal}"
+            G = mem.metabo_graph.graph
+            G.add_node(node, typ="ziel", text=goal)
+            G.nodes[node]["goal"] = True
+            mem.metabo_graph.save()
+        except Exception:
+            pass
 
     def load_reflection(self) -> str:
         """Return the last reflection text if available."""

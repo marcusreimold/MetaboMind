@@ -45,7 +45,7 @@ def setup(monkeypatch, tmp_path, goal=""):
     monkeypatch.setattr(metabo_cycle, "load_context", lambda g, goal: [])
     monkeypatch.setattr(metabo_cycle, "recall_context", lambda scope="goal", limit=5: [])
     monkeypatch.setattr(metabo_cycle, "generate_reflection", lambda **k: {"reflection": ""})
-    monkeypatch.setattr(metabo_cycle, "extract_triplets", lambda text, source="user_input": [])
+    monkeypatch.setattr(metabo_cycle, "process_triples", lambda text, source="user_input": [])
 
     path = tmp_path / "goal.txt"
     refl = tmp_path / "ref.txt"

@@ -51,21 +51,7 @@ class MemoryManager:
     ) -> None:
         """Insert all insights of one cycle into the :class:`MetaboGraph`."""
 
-        if triplets:
-            from parsing import triplet_pipeline
-            triplet_pipeline.add_triplets_to_graph(
-                [
-                    {
-                        "subject": s,
-                        "predicate": r,
-                        "object": o,
-                        "source": "llm",
-                        "timestamp": datetime.utcnow().isoformat(timespec="seconds"),
-                    }
-                    for s, r, o in triplets
-                ],
-                mg=self.metabo_graph,
-            )
+
 
         inp_node = f"eingabe:{user_input}"
         self.metabo_graph.graph.add_node(inp_node, typ="eingabe", text=user_input)

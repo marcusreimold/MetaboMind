@@ -1,4 +1,8 @@
+import os
+import sys
 import json
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from memory.memory_manager import MemoryManager
 
 
@@ -10,6 +14,7 @@ def test_add_metabo_insight(tmp_path):
         meta_path=str(tmp_path / "m.gml"),
     )
     triplets = [("A", "rel", "B")]
+    mem.metabo_graph.add_triplets(triplets)
     mem.add_metabo_insight_to_graph(
         user_input="hi",
         triplets=triplets,
