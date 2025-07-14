@@ -1,0 +1,33 @@
+goal_tagging:
+  description: Bei Zielumschaltung soll der neue Zielknoten im Graphen mit goal=True
+    getaggt werden.
+  expected: '''Jazzmusik'' ist im metabograph.gml mit Attribut goal=True gespeichert.'
+  steps:
+  - 'Simuliere Zielumschaltung: ''Bitte beschäftige dich mit Jazzmusik!'''
+  - Erwarte, dass Knoten 'Jazzmusik' im Graphen mit goal=True existiert
+graph_redundancy_check:
+  description: Verwandte Knoten wie 'Musik' und 'klassische Musik' sollen bei hoher
+    Ähnlichkeit erkannt und ggf. verknüpft werden.
+  expected: '''klassische Musik'' und ''Musik'' sind entweder verlinkt oder gemerged.'
+  steps:
+  - Simuliere beide Einträge im Graphen
+  - Starte Konsolidierung über Ähnlichkeitsprüfung
+  - Erwarte, dass Verlinkung oder Merge erfolgt
+metabo_takt_triplet_integration:
+  description: Nach einem Metabo-Takt sollen Tripel aus der Reflexion korrekt in metabograph.gml
+    integriert werden.
+  expected: Tripel ('Musik', 'beeinflusst', 'Emotionen') ist im metabograph.gml enthalten.
+  steps:
+  - Starte Metabo-Takt
+  - 'Simuliere generierte Reflexion: ''Ich reflektiere, dass Musik Emotionen beeinflusst.'''
+  - 'Erwarte extrahiertes Tripel: (''Musik'', ''beeinflusst'', ''Emotionen'')'
+  - Stelle sicher, dass dieses Tripel im metabograph.gml gespeichert wurde
+user_input_triplet_handling:
+  description: Tripel aus Nutzereingaben sollen ebenso wie Reflexionen zentral extrahiert
+    und gespeichert werden.
+  expected: Tripel ('Ich', 'interessiere mich für', 'klassische Musik') ist im metabograph.gml
+    enthalten.
+  steps:
+  - 'Simuliere Nutzereingabe: ''Ich interessiere mich für klassische Musik.'''
+  - 'Erwarte Tripel: (''Ich'', ''interessiere mich für'', ''klassische Musik'')'
+  - Stelle sicher, dass das Tripel korrekt im metabograph gespeichert wurde
