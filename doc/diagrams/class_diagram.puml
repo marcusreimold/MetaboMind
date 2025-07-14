@@ -58,12 +58,14 @@ class MetaboGraph {
   +graph : MultiDiGraph
   +add_graph(graph)
   +add_triplets(triplets)
-  +import_intention_graph(path)
   +calculate_entropy()
   +snapshot()
   +save()
   -_load()
   -_merge_node(node, typ, source)
+}
+class GraphUtils {
+  +process_triples(text, source)
 }
 class MetaboLogger {
   +filepath : Path
@@ -76,6 +78,7 @@ MetaboCycle --> MemoryManager
 MetaboCycle --> ReflectionEngine
 MetaboCycle --> YinYangOrchestrator
 MetaboCycle --> ModeDecider
+MetaboCycle --> GraphUtils
 MemoryManager --> MetaboGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager

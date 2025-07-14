@@ -66,15 +66,7 @@ def dummy_generate_reflection(last_user_input, goal, last_reflection, triplets=N
 
 def dummy_extract_triplets(text, model=None):
     if "K\u00fcnstliche Intelligenz" in text:
-        return [
-            {
-                "subject": "K\u00fcnstliche Intelligenz",
-                "predicate": "ver\u00e4ndert",
-                "object": "Arbeitswelt",
-                "source": "reflection",
-                "timestamp": "t",
-            }
-        ]
+        return [("K\u00fcnstliche Intelligenz", "ver\u00e4ndert", "Arbeitswelt")]
     return []
 
 
@@ -137,7 +129,12 @@ def test_graph_integration(monkeypatch, tmp_path):
     monkeypatch.setattr(metabo_cycle, "load_context", lambda g, goal: [])
     monkeypatch.setattr(metabo_cycle, "recall_context", lambda *a, **k: [])
     monkeypatch.setattr(metabo_cycle, "generate_reflection", dummy_generate_reflection)
-    monkeypatch.setattr(metabo_cycle, "extract_triplets", lambda text, source="reflection": dummy_extract_triplets(text))
+    def dummy_process(text, source="reflection"):
+        t = dummy_extract_triplets(text)
+        if t:
+            mgr.metabo_graph.add_triplets(t)
+        return t
+    monkeypatch.setattr(metabo_cycle, "process_triples", dummy_process)
     monkeypatch.setattr(metabo_cycle, "decide_mode", lambda *a, **k: "yang")
     monkeypatch.setattr(metabo_cycle, "decide_yin_yang_mode", lambda *a, **k: {})
 

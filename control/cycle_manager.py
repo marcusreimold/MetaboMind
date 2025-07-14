@@ -9,7 +9,7 @@ from memory.memory_manager import get_memory_manager
 
 from logs.logger import MetaboLogger
 
-from parsing.triplet_pipeline import extract_triplets
+from utils.graph_utils import process_triples
 
 from reflection.reflection_engine import generate_reflection, run_llm_task
 from control.yin_yang_controller import mode_hint
@@ -62,16 +62,18 @@ class CycleManager:
         """Run a single Metabo cycle with the provided text and return results."""
         self.cycle += 1
 
+        triplets = []
         if self.api_key:
-            triplets = extract_triplets(text, source="user_input")
+            before = self.memory.metabo_graph.calculate_entropy()
+            tuple_triplets = process_triples(text, source="user_input")
+            triplets = tuple_triplets
+            after = self.memory.metabo_graph.calculate_entropy()
         else:
             triplets = self._extract_triplets(text)
-
-        tuple_triplets = [
-            (t["subject"], t["predicate"], t["object"]) for t in triplets
-        ]
-
-        before, after = self.memory.store_triplets(triplets)
+            tuple_triplets = [
+                (t["subject"], t["predicate"], t["object"]) for t in triplets
+            ]
+            before, after = self.memory.store_triplets(triplets)
         emo = self.memory.save_emotion(before, after)
 
         new_goal = goal_engine.update_goal(

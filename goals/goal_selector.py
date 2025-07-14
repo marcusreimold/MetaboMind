@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover - optional dependency
     openai = None
 
 from goals.goal_manager import GoalManager
-from memory.intention_graph import IntentionGraph
+from memory.metabo_graph import MetaboGraph
 from cfg.config import PROMPTS
 
 logger = logging.getLogger(__name__)
@@ -138,8 +138,8 @@ def check_goal_shift(current_goal: str, proposed_goal: str, api_key: str | None 
     return ratio < 0.6
 
 
-def apply_goal_shift(current_goal: str, new_goal: str, goal_manager: GoalManager, graph: IntentionGraph) -> None:
-    """Persist the shift from ``current_goal`` to ``new_goal``."""
+def apply_goal_shift(current_goal: str, new_goal: str, goal_manager: GoalManager, graph: MetaboGraph) -> None:
+    """Persist the shift from ``current_goal`` to ``new_goal`` using ``MetaboGraph``."""
     if current_goal.strip():
         graph.add_goal_transition(current_goal, new_goal)
     else:
