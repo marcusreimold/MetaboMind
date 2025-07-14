@@ -1,0 +1,36 @@
+- input: "Künstliche Intelligenz verändert die Arbeitswelt."
+  expected_graph_triples:
+    - ["Künstliche Intelligenz", "verändert", "Arbeitswelt"]
+  expected_graph_contains:
+    - type: "konzept"
+      label: "Künstliche Intelligenz"
+    - type: "konzept"
+      label: "Arbeitswelt"
+    - type: "relation"
+      source: "Künstliche Intelligenz"
+      target: "Arbeitswelt"
+      relation: "verändert"
+
+- input: "Bitte beschäftige dich mit klassischer Musik."
+  expected_graph_contains:
+    - type: "ziel"
+      label: "klassische Musik"
+    - type: "relation"
+      source_contains: "eingabe"
+      relation: "führt_zu"
+      target_contains: "klassische Musik"
+
+- input: "Woran erinnerst du dich?"
+  expected_graph_contains:
+    - type: "reflexion"
+      text_contains: "Ich erinnere mich"
+    - type: "relation"
+      relation: "reflektiert"
+
+- input: "Ich bin verwirrt."
+  expected_graph_metadata:
+    - key: "emotion"
+      value_in: ["negativ", "neutral"]
+    - key: "delta"
+      value_type: float
+
