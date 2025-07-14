@@ -77,6 +77,13 @@ class MetaboGraph {
   -_load()
   -_merge_node(node, typ, source)
 }
+class GraphManager {
+  +intention_graph : IntentionGraph
+  +metabo_graph : MetaboGraph
+  +add_triplets(triplets, node_typ, edge_typ, source)
+  +save_graph()
+  +snapshot()
+}
 class MetaboLogger {
   +filepath : Path
   +log_cycle(input_text, reflection, triplets, ent_before, ent_after, emotion, intensity)
@@ -86,12 +93,14 @@ Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
 MetaboCycle --> ReflectionEngine
+ReflectionEngine --> GraphManager
 MetaboCycle --> YinYangOrchestrator
 MetaboCycle --> ModeDecider
 MemoryManager --> IntentionGraph
 MemoryManager --> MetaboGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager
+TaktEngine --> ReflectionEngine
 Main --> YinYangOrchestrator
 MetaboGUI --> MetaboCycle : uses thread
 MetaboGUI --> TaktEngine : uses thread

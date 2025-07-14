@@ -54,6 +54,10 @@ a `typ` attribute like `konzept`, `intention` or `emotion` and optional
 functions allow extraction of subgraphs by type and calculation of its Shannon
 entropy.
 
+Reflections generated during a MetaboTakt are now also parsed for symbolic
+triples. These triples are stored in the ``MetaboGraph`` and linked to the
+current goal node along with the detected emotion.
+
 ## Diagrams
 
 ### Class overview
