@@ -152,11 +152,7 @@ def generate_reflection(
     memory = get_memory_manager()
     if changed and proposed and proposed.strip() and proposed != goal:
         logger.info("Neues Ziel erkannt: %s -> %s", goal, proposed)
-        if goal:
-            memory.graph.add_goal_transition(goal, proposed)
-        else:
-            memory.graph.goal_graph.add_node(proposed)
-            memory.graph._save_goal_graph()
+        memory.graph.add_goal_transition(goal or None, proposed)
         goal_manager.set_goal(proposed)
         goal_update_msg = run_llm_task(
             f"Reflektiere kurz den Zielwechsel von '{goal}' zu '{proposed}'.",

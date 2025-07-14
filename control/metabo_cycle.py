@@ -7,7 +7,7 @@ from goals.goal_manager import GoalManager
 from goals.goal_updater import propose_goal, check_goal_shift
 from memory.memory_manager import get_memory_manager
 from memory.context_selector import load_context
-from parsing.triplet_parser_llm import extract_triplets_via_llm
+from memory.graph_utils import process_triples
 from memory.recall_context import recall_context
 from reflection.reflection_engine import generate_reflection
 from logs.logger import MetaboLogger
@@ -42,11 +42,7 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         proposed = user_input.strip()
 
     if proposed and check_goal_shift(goal, proposed):
-        if goal:
-            memory.graph.add_goal_transition(goal, proposed)
-        else:
-            memory.graph.goal_graph.add_node(proposed)
-            memory.graph._save_goal_graph()
+        memory.graph.add_goal_transition(goal or None, proposed)
         goal_mgr.set_goal(proposed)
         logger.info("Neues Ziel erkannt: %s -> %s", goal, proposed)
         goal = proposed
@@ -90,18 +86,15 @@ def run_metabo_cycle(user_input: str) -> Dict[str, object]:
         reflection_data = {"reflection": "", "triplets": [], "explanation": ""}
 
     try:
-        triplets = extract_triplets_via_llm(reflection_text)
+        triple_data = process_triples(reflection_text, source="reflection")
+        triplets = triple_data["triplets"]
+        entropy_before = triple_data["entropy_before"]
+        entropy_after = triple_data["entropy_after"]
     except Exception as exc:
-        logger.warning("triplet extraction failed: %s", exc)
+        logger.warning("metabograph update failed: %s", exc)
         triplets = []
+        entropy_after = entropy_of_graph(memory.graph.snapshot())
 
-    if triplets:
-        try:
-            memory.graph.add_triplets(triplets)
-        except Exception as exc:
-            logger.warning("graph update failed: %s", exc)
-
-    entropy_after = entropy_of_graph(memory.graph.snapshot())
     emotion = interpret_emotion(entropy_before, entropy_after)
 
 

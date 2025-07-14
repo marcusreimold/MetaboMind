@@ -9,6 +9,7 @@ from memory.memory_manager import get_memory_manager
 from logs.logger import MetaboLogger
 
 from parsing.triplet_parser_llm import extract_triplets_via_llm
+from memory.graph_utils import process_triples
 
 from reflection.reflection_engine import generate_reflection, run_llm_task
 
@@ -51,11 +52,13 @@ class CycleManager:
         self.cycle += 1
 
         if self.api_key:
-            triplets = extract_triplets_via_llm(text)
+            triple_data = process_triples(text, source="user_input")
+            triplets = triple_data["triplets"]
+            before = triple_data["entropy_before"]
+            after = triple_data["entropy_after"]
         else:
             triplets = self._extract_triplets(text)
-
-        before, after = self.memory.store_triplets(triplets)
+            before, after = self.memory.store_triplets(triplets)
         emo = self.memory.save_emotion(before, after)
 
         new_goal = goal_engine.update_goal(
@@ -67,11 +70,7 @@ class CycleManager:
         goal_message = ""
         goal_reflection = ""
         if new_goal != self.current_goal:
-            if self.current_goal:
-                self.memory.graph.add_goal_transition(self.current_goal, new_goal)
-            else:
-                self.memory.graph.goal_graph.add_node(new_goal)
-                self.memory.graph._save_goal_graph()
+            self.memory.graph.add_goal_transition(self.current_goal or None, new_goal)
             goal_reflection = run_llm_task(
                 f"Reflektiere kurz den Zielwechsel von '{self.current_goal}' zu '{new_goal}'.",
                 api_key=self.api_key,

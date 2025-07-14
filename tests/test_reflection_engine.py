@@ -20,9 +20,7 @@ def setup_common(monkeypatch):
     monkeypatch.setattr(reflection_engine, "run_llm_task", lambda *a, **k: "note")
     mem = types.SimpleNamespace(
         graph=types.SimpleNamespace(
-            add_goal_transition=lambda a,b: setattr(mem, "edge", (a,b)),
-            goal_graph=types.SimpleNamespace(add_node=lambda n: None),
-            _save_goal_graph=lambda: None,
+            add_goal_transition=lambda a, b: setattr(mem, "edge", (a, b)),
         )
     )
     monkeypatch.setattr(reflection_engine, "get_memory_manager", lambda: mem)

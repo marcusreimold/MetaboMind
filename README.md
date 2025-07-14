@@ -4,12 +4,13 @@ MetaboMind is a simple goal-oriented reasoning demo. The main entry point is
 `main.py` which launches a small GUI and handles the cycle logic.
 
 Runtime data such as logs or graphs are stored in the `data/` directory.
+Triples extracted from reflections and user input are merged via `process_triples` into `data/metabograph.gml`.
 
 ## Diagrams
 
 ### Class overview
 
-![Class Diagram](https://www.plantuml.com/plantuml/png/SoWkIImgAStDuKhEIImkLl1DpCo3CLDB4fFodIkJSrAX8kxvYJc-YNc9wQb5S3Mv-KMLg6AUUIMfUIMP-NdkHOa56L31eDIqdDHaaAXhNdfc7ip4aCJi4gW0o6O5NLqx57kHs60vP1UWow6w1LqMmm4eoi5Aq1oES1iMuz4aaTtba9gN0WfG0000)
+![Class Diagram](https://www.plantuml.com/plantuml/png/bZFLDsIwDET3nKIX6BVQJYSqLrpBcAAT3BLhOigxi94epUrIp-xGM47nWemcgJXPQgdF4FwzguYoUeBuTqsiDE5vgEZgmNH-ZhZj19IbWJBFG-4tvJ_xqdc30eSCccGJUPmxM8-aY8UVXhIMj9K07bEAyfSW5Uh1VsLV6Q5gtzohF5u2sDoyYf9prsIcuY5SZYf88N_yBQ)
 
 ### Cycle sequence
 

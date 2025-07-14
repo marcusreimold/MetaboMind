@@ -4,13 +4,16 @@ class MetaboCycle
 class GoalManager
 class MemoryManager
 class IntentionGraph
+class GraphUtils
 class ReflectionEngine
 class TaktEngine
 Main --> MetaboCycle
 MetaboCycle --> GoalManager
 MetaboCycle --> MemoryManager
 MetaboCycle --> ReflectionEngine
+MetaboCycle --> GraphUtils
 MemoryManager --> IntentionGraph
 TaktEngine --> MemoryManager
 TaktEngine --> GoalManager
+TaktEngine --> GraphUtils
 @enduml

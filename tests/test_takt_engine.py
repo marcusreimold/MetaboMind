@@ -10,7 +10,11 @@ from control import takt_engine
 class DummyMem:
     def __init__(self):
         self.val = 0.0
-        self.graph = types.SimpleNamespace(add_goal_transition=lambda a,b: None)
+        self.graph = types.SimpleNamespace(
+            add_goal_transition=lambda a, b: None,
+            graph=types.SimpleNamespace(nodes=[]),
+            save_graph=lambda: None,
+        )
 
     def calculate_entropy(self):
         return 0.4
@@ -24,6 +28,9 @@ class DummyMem:
     def map_entropy_to_emotion(self, delta):
         return {"delta": delta, "emotion": "neutral", "intensity": "low"}
 
+    def store_triplets(self, triplets):
+        return 0.4, 0.4
+
     def store_reflection(self, reflection):
         self.reflection = reflection
 
@@ -34,6 +41,8 @@ class DummyMem:
 def setup(monkeypatch, change_goal=False):
     mem = DummyMem()
     monkeypatch.setattr(takt_engine, "get_memory_manager", lambda: mem)
+    import memory.graph_utils as graph_utils
+    monkeypatch.setattr(graph_utils, "get_memory_manager", lambda: mem)
     monkeypatch.setattr(takt_engine.goal_engine, "get_current_goal", lambda: "A")
     if change_goal:
         monkeypatch.setattr(takt_engine.goal_engine, "update_goal", lambda **k: "B")

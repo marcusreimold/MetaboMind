@@ -15,7 +15,7 @@ class MemoryManager:
 
     def __init__(
         self,
-        graph_path: str = "data/graph.gml",
+        graph_path: str = "data/metabograph.gml",
         emotion_log: str = "data/emotions.jsonl",
         reflection_path: str = "memory/last_reflection.txt",
         entropy_path: str = "memory/last_entropy.txt",
