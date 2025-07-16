@@ -1,3 +1,8 @@
+from core.metabo_logger import MetaboLogger
+from core.metabo_config import MetaboConfig
+
+from typing import Dict, Any, Optional
+
 class MetaboAPI:
     """
     Öffentliche API für externe Interaktion mit MetaboMind

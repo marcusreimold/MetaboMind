@@ -1,3 +1,7 @@
+from typing import Dict, Any, Optional
+from datetime import datetime
+import uuid
+
 class MetaboRelation:
     """
     Repräsentation einer Relation im MetaboMind-Wissensgraphen
@@ -43,7 +47,20 @@ class MetaboRelation:
         Returns:
             Dict-Repräsentation der Relation
         """
-        pass
+        return {
+            "id": self.id,
+            "source_id": self.source_id,
+            "target_id": self.target_id,
+            "type": self.type,
+            "weight": self.weight,
+            "properties": self.properties,
+            "metadata": {
+                **self.metadata,
+                "creation_time": self.metadata["creation_time"].isoformat(),
+                "last_reinforced": self.metadata["last_reinforced"].isoformat()
+            },
+            "bidirectional": self.bidirectional
+        }
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'MetaboRelation':
@@ -56,7 +73,24 @@ class MetaboRelation:
         Returns:
             Erstellte MetaboRelation
         """
-        pass
+        relation = cls(
+            source_id=data["source_id"],
+            target_id=data["target_id"],
+            rel_type=data["type"],
+            rel_id=data["id"],
+            weight=data["weight"],
+            properties=data["properties"]
+        )
+        
+        # Metadata wiederherstellen
+        relation.metadata = data["metadata"]
+        # Datumsfelder konvertieren
+        relation.metadata["creation_time"] = datetime.fromisoformat(relation.metadata["creation_time"])
+        relation.metadata["last_reinforced"] = datetime.fromisoformat(relation.metadata["last_reinforced"])
+        
+        relation.bidirectional = data["bidirectional"]
+        
+        return relation
     
     def update_metadata(self, key: str, value: Any) -> None:
         """
@@ -66,7 +100,8 @@ class MetaboRelation:
             key: Metadatenschlüssel
             value: Neuer Wert
         """
-        pass
+        if key in self.metadata:
+            self.metadata[key] = value
     
     def reinforce(self, amount: float = 0.1) -> None:
         """
@@ -75,7 +110,9 @@ class MetaboRelation:
         Args:
             amount: Verstärkungsintensität
         """
-        pass
+        self.weight = min(1.0, self.weight + amount)
+        self.metadata["reinforcement_count"] += 1
+        self.metadata["last_reinforced"] = datetime.now()
     
     def decay(self, amount: float = 0.05) -> None:
         """
@@ -84,4 +121,8 @@ class MetaboRelation:
         Args:
             amount: Abschwächungsintensität
         """
-        pass
+        self.weight = max(0.01, self.weight - amount)
+        
+    def __str__(self) -> str:
+        """String-Repräsentation für leichtes Debugging"""
+        return f"Relation({self.id}, {self.source_id} -[{self.type}]-> {self.target_id}, weight={self.weight})"

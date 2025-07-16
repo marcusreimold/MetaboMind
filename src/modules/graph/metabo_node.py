@@ -1,3 +1,7 @@
+from typing import Dict, List, Any, Optional
+from datetime import datetime
+import uuid
+
 class MetaboNode:
     """
     Repräsentation eines Knotens im MetaboMind-Wissensgraphen
@@ -32,6 +36,7 @@ class MetaboNode:
         }
         self.embeddings = {}  # Verschiedene Embedding-Räume
     
+    @classmethod
     def to_dict(self) -> Dict[str, Any]:
         """
         Konvertiert den Knoten in ein Dictionary
@@ -39,20 +44,38 @@ class MetaboNode:
         Returns:
             Dict-Repräsentation des Knotens
         """
-        pass
-    
+        return {
+            "id": self.id,
+            "labels": self.labels,
+            "properties": self.properties,
+            "layer": self.layer,
+            "metadata": {
+                **self.metadata,
+                "creation_time": self.metadata["creation_time"].isoformat(),
+                "last_access": self.metadata["last_access"].isoformat()
+            },
+            "embeddings": self.embeddings
+        }
+        
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'MetaboNode':
-        """
-        Erstellt einen Knoten aus einem Dictionary
+        """Erstellt einen Knoten aus einem Dictionary"""
+        node = cls(
+            node_id=data["id"],
+            labels=data["labels"],
+            properties=data["properties"],
+            layer=data["layer"]
+        )
         
-        Args:
-            data: Dictionary mit Knotendaten
-            
-        Returns:
-            Erstellter MetaboNode
-        """
-        pass
+        # Metadata wiederherstellen
+        node.metadata = data["metadata"]
+        # Datumsfelder konvertieren
+        node.metadata["creation_time"] = datetime.fromisoformat(node.metadata["creation_time"])
+        node.metadata["last_access"] = datetime.fromisoformat(node.metadata["last_access"])
+        
+        node.embeddings = data.get("embeddings", {})
+        
+        return node
     
     def update_metadata(self, key: str, value: Any) -> None:
         """
@@ -62,10 +85,16 @@ class MetaboNode:
             key: Metadatenschlüssel
             value: Neuer Wert
         """
-        pass
+        if key in self.metadata:
+            self.metadata[key] = value
     
     def increment_access(self) -> None:
         """
         Aktualisiert Zugriffszähler und -zeitstempel
         """
-        pass
+        self.metadata["access_count"] += 1
+        self.metadata["last_access"] = datetime.now()
+        
+    def __str__(self) -> str:
+        """String-Repräsentation für leichtes Debugging"""
+        return f"Node({self.id}, labels={self.labels}, layer={self.layer})"
