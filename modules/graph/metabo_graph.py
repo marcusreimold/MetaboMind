@@ -4,11 +4,11 @@ import pickle
 from datetime import datetime
 import json
 
-from core.metabo_logger import MetaboLogger
-from core.metabo_config import MetaboConfig
-from core.metabo_event_bus import MetaboEventBus
-from graph.metabo_node import MetaboNode
-from graph.metabo_relation import MetaboRelation
+from ..core.metabo_logger import MetaboLogger
+from ..core.metabo_config import MetaboConfig
+from ..core.metabo_event_bus import MetaboEventBus
+from .metabo_node import MetaboNode
+from .metabo_relation import MetaboRelation
 
 class MetaboGraph:
     """
@@ -579,8 +579,12 @@ class MetaboGraph:
         
 # Beispielverwendung
 if __name__ == "__main__":
+    config = MetaboConfig
+    logger = MetaboLogger(config=config)
+    event_bus = MetaboEventBus(logger=logger)
+
     # Erstelle einen neuen Graphen
-    graph = MetaboGraph()
+    graph = MetaboGraph(logger=logger, event_bus=event_bus, config=config)
     
     # Einige Knoten hinzufügen
     metabomind = MetaboNode(
@@ -646,18 +650,18 @@ if __name__ == "__main__":
     graph.add_relation(regulates_relation)
     
     # Graph visualisieren
-    print("Visualizing graph...")
-    graph.visualize(title="MetaboMind Concept Graph")
+    #print("Visualizing graph...")
+    #graph.visualize(title="MetaboMind Concept Graph")
     
     # Graph speichern
     print("Saving graph...")
-    graph.save_to_file("metabomind_graph.pkl")
-    graph.export_to_json("metabomind_graph.json")
+    graph.save_to_file("./data/metabomind_graph.pkl")
+    graph.export_to_json("./data/metabomind_graph.json")
     
     # Graph aus Datei laden
     print("Loading graph...")
-    new_graph = MetaboGraph()
-    new_graph.load_from_file("metabomind_graph.pkl")
+    new_graph = MetaboGraph(logger=logger, config=config, event_bus=event_bus)
+    new_graph.load_from_file("./data/metabomind_graph.pkl")
     
     # Demo für einige Funktionen
     print("\nFinding neighbors of MetaboMind node:")
@@ -671,9 +675,10 @@ if __name__ == "__main__":
     for node_id in knowledge_nodes:
         node = new_graph.get_node(node_id)
         print(f"- {node.properties.get('name', node.id)}: {node.properties.get('description', '')}")
+
     
     print("\nFinding shortest path from Yin-Yang to Knowledge Graph:")
-    path = new_graph.get_shortest_path(yin_yang.id, knowledge_graph.id)
+    path = new_graph.get_shortest_path(metabomind.id, yin_yang.id)
     if path:
         for node_id, relation_id in path:
             node = new_graph.get_node(node_id)

@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class MetaboState(Enum):
     """Diskrete Zustände des MetaboMind-Systems"""
     STRONG_YANG = 0

@@ -1,3 +1,5 @@
+from typing import Optional
+
 class MetaboConfig:
     """
     Zentrale Konfiguration für das MetaboMind-System

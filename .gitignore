@@ -1,8 +1,7 @@
 secrets/
 **/__pycache__
-data/graph.gml
-data/metabo_log.jsonl
-memory/intent_graph.gml
+data/*
 *.txt
 runMetaboMind.sh
 *.zip
+

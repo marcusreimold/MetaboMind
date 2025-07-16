@@ -1,3 +1,7 @@
+from typing import Dict, Any
+
+from .metabo_config import MetaboConfig
+
 class MetaboLogger:
     """
     Logging-Subsystem für das MetaboMind-Framework

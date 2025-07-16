@@ -12,7 +12,8 @@ class MetaboRelation:
                  rel_type: str,
                  rel_id: Optional[str] = None,
                  weight: float = 1.0,
-                 properties: Optional[Dict[str, Any]] = None):
+                 properties: Optional[Dict[str, Any]] = None,
+                 bidirectional: bool = False):
         """
         Initialisiert eine Relation im Wissensgraphen
         
@@ -38,7 +39,7 @@ class MetaboRelation:
             "entropy_contribution": 0.0,
             "source": None
         }
-        self.bidirectional = False
+        self.bidirectional = bidirectional
     
     def to_dict(self) -> Dict[str, Any]:
         """

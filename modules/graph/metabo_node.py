@@ -36,7 +36,6 @@ class MetaboNode:
         }
         self.embeddings = {}  # Verschiedene Embedding-Räume
     
-    @classmethod
     def to_dict(self) -> Dict[str, Any]:
         """
         Konvertiert den Knoten in ein Dictionary
