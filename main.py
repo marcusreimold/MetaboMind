@@ -1,33 +1,51 @@
-from graph.metabo_memory import MetaboMemory
-from graph.graph_utils import draw_parse_graph, draw_gnn_graph
-from graph.graph_entropy_analyzer import overall_graph_entropy
-from graph.gnn_graph_entropy_analyzer import overall_gnn_entropy
+def main():
+    """Beispiel für die Nutzung des MetaboMind-Frameworks"""
+    try:
+        # Initialisiere das System
+        metabo = MetaboCore("config.json")
+        metabo.initialize_system()
+        
+        # Lade vortrainierte Modelle
+        metabo.gnn_manager.load_models("models/")
+        
+        # Starte kontinuierliche Verarbeitung
+        metabo.start_continuous_processing()
+        
+        # Starte REST-API
+        rest_api = MetaboRESTAPI(metabo.api, metabo.config, metabo.logger)
+        rest_api.start_server()
+        
+        # Integriere etwas Wissen
+        result = metabo.integrate_knowledge(
+            "MetaboMind ist ein System für selbstoptimierendes Wissensmanagement, "
+            "das auf dem Yin-Yang-Prinzip und Entropieminimierung basiert.")
+        
+        # Führe eine Abfrage durch
+        query_result = metabo.process_query(
+            "Wie hängt das Yin-Yang-Prinzip mit der Entropieminimierung zusammen?")
+        
+        # Führe einen Metabo-Zyklus aus
+        cycle_result = metabo.run_metabo_cycle()
+        
+        # Führe eine Meta-Reflexion durch
+        reflection = metabo.meta_consciousness.reflect(
+            metabo.graph, metabo.regulator.yin_yang, metabo.llm)
+        
+        # Überwache kontinuierlich den Status
+        while True:
+            time.sleep(10)
+            status = metabo.get_system_status()
+            print(f"System Yin-Yang: {status['yin_yang']}, " 
+                  f"Entropie: {status['entropy']}, " 
+                  f"Knoten: {status['nodes_count']}")
+    
+    except KeyboardInterrupt:
+        # Beenden der Verarbeitung
+        metabo.stop_continuous_processing()
+        rest_api.stop_server()
+        metabo.save_state("checkpoints/latest/")
+        print("MetaboMind-System sicher beendet.")
 
- 
+
 if __name__ == "__main__":
-    memory = MetaboMemory()
-    #text = "Der Mann, der gestern im Park spazieren ging, wurde von einem Hund gebissen."
-
-    print("🧠 MetaboMind Textanalyse gestartet. Gib einen Satz ein (oder '/quit' zum Beenden):\n")
-    while True:
-        text = input("🗣️ > ").strip()
-        if text.lower() == "/quit":
-            print("👋 Tschüss!")
-            break
-
-        if not text:
-            continue
-
-        memory.add_text(text)
-
-        print("\n📊 Aktuelle Netzwerk-Entropie:")
-        for k, v in memory.get_graph_entropy().items():
-            print(f"  {k}: {v:.4f}")
-
-        print("\n🧬 Aktuelle GNN-Entropie:")
-        for k, v in memory.get_gnn_entropy().items():
-            print(f"  {k}: {v:.4f}")
-
-        print("\n🔁 Nächster Satz oder '/quit'\n")
-        #draw_parse_graph(parser.graph, title="Parse-Graph für den Text")  # Visualisierung des Parse-Graphs
-        #draw_gnn_graph(parser.gnn_graph, parser.doc, title="GNN-Graph für den Text")  # Visualisierung des GNN-Graphs
+    main()
